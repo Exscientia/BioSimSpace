@@ -1747,7 +1747,7 @@ class Molecule(_SireWrapper):
             conn = _SireMol.Connectivity(mol.info()).edit()
             for bond in mol.property("bond").potentials():
                 conn.connect(bond.atom0(), bond.atom1())
-            mol.setProperty("connectivity", conn)
+            mol.setProperty("connectivity", conn.commit())
 
             # Now we have the correct connectivity, we can regenerate the exclusions.
             gro_sys = _SireIO.GroTop(_System(mol)._sire_object).toSystem()

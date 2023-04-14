@@ -981,13 +981,26 @@ def merge(
     conn0 = _SireMol.Connectivity(edit_mol.info()).edit()
     conn1 = _SireMol.Connectivity(edit_mol.info()).edit()
 
-    for bond in edit_mol.property("bond0").potentials():
-        conn.connect(bond.atom0(), bond.atom1())
-        conn0.connect(bond.atom0(), bond.atom1())
+    bonds_atoms0 = {
+        frozenset([bond.atom0(), bond.atom1()])
+        for bond in edit_mol.property("bond0").potentials()
+    }
+    bonds_atoms1 = {
+        frozenset([bond.atom0(), bond.atom1()])
+        for bond in edit_mol.property("bond1").potentials()
+    }
 
-    for bond in edit_mol.property("bond1").potentials():
-        conn.connect(bond.atom0(), bond.atom1())
-        conn1.connect(bond.atom0(), bond.atom1())
+    for atom0, atom1 in bonds_atoms0:
+        conn0.connect(atom0, atom1)
+
+    for atom0, atom1 in bonds_atoms1:
+        conn1.connect(atom0, atom1)
+
+    # We only add a bond to the total connectivity if it's defined in both states
+    # This results in a "broken" topology if one writes it in GROMACS
+    # But GROMACS can't handle bond breaks anyway
+    for atom0, atom1 in bonds_atoms0 & bonds_atoms1:
+        conn.connect(atom0, atom1)
 
     conn = conn.commit()
     conn0 = conn0.commit()
