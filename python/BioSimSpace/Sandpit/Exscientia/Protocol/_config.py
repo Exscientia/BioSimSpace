@@ -135,11 +135,6 @@ class ConfigFactory:
         ti0_indices = mcs0_indices + dummy0_indices
         ti1_indices = mcs1_indices + dummy1_indices
 
-        # AMBER doesn't seem to work well with the same atom being defined as a scmask in both endstates
-        common_dummies = set(dummy0_indices) & set(dummy1_indices)
-        dummy0_indices = sorted(set(dummy0_indices) - common_dummies)
-        dummy1_indices = sorted(set(dummy1_indices) - common_dummies)
-
         # Define whether HMR is used based on the timestep.
         # When HMR is used, there can be no SHAKE.
         if timestep >= 0.004:
