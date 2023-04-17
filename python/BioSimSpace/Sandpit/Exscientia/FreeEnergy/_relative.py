@@ -27,6 +27,7 @@ __email__ = "lester.hedges@gmail.com"
 __all__ = ["Relative", "getData"]
 
 import copy as _copy
+import math as _math
 import os as _os
 import shutil as _shutil
 import subprocess as _subprocess
@@ -34,8 +35,6 @@ import sys as _sys
 import warnings as _warnings
 import zipfile as _zipfile
 from glob import glob as _glob
-
-import math as _math
 
 from .._Utils import _assert_imported, _have_imported, _try_import
 
