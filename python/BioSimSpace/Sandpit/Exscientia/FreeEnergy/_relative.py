@@ -643,7 +643,7 @@ class Relative:
             units="kcal/mol",
             software=engine,
             dir=work_dir,
-            prefix="lamba_*/" + prefix,
+            prefix="lambda_*/" + prefix,
             suffix=suffix,
             T=temperature / _Units.Temperature.kelvin,
             outdirectory=work_dir,
