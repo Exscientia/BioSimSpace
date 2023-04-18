@@ -466,8 +466,8 @@ class Amber(_process.Process):
         # Set the configuration.
         if not isinstance(self._protocol, _Protocol.Dummy):
             config = _Protocol.ConfigFactory(
-            self._system, self._protocol, explicit_dummies=self._explicit_dummies
-        )
+                self._system, self._protocol, explicit_dummies=self._explicit_dummies
+            )
             self.addToConfig(
                 config.generateAmberConfig(
                     extra_options={**config_options, **self._extra_options},
