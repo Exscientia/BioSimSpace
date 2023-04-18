@@ -32,7 +32,6 @@ _pygtail = _try_import("pygtail")
 
 import os as _os
 import re as _re
-import time as _time
 import shutil as _shutil
 import timeit as _timeit
 import warnings as _warnings
@@ -318,6 +317,7 @@ class Amber(_process.Process):
                 _Protocol.Steering,
                 _Protocol.Metadynamics,
                 _Protocol.Production,
+                _Protocol.Dummy,
             ),
         ):
             raise _IncompatibleError(
@@ -464,18 +464,19 @@ class Amber(_process.Process):
             setattr(self, "getTime", self._getTime)
 
         # Set the configuration.
-        config = _Protocol.ConfigFactory(
+        if not isinstance(self._protocol, _Protocol.Dummy):
+            config = _Protocol.ConfigFactory(
             self._system, self._protocol, explicit_dummies=self._explicit_dummies
         )
-        self.addToConfig(
-            config.generateAmberConfig(
-                extra_options={**config_options, **self._extra_options},
-                extra_lines=self._extra_lines,
+            self.addToConfig(
+                config.generateAmberConfig(
+                    extra_options={**config_options, **self._extra_options},
+                    extra_lines=self._extra_lines,
+                )
             )
-        )
 
-        # Flag that this isn't a custom protocol.
-        self._protocol._setCustomised(False)
+            # Flag that this isn't a custom protocol.
+            self._protocol._setCustomised(False)
 
     def _generate_args(self):
         """Generate the dictionary of command-line arguments."""
