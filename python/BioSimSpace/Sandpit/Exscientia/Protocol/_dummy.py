@@ -3,7 +3,7 @@ from ._protocol import Protocol as _Protocol
 
 
 class Dummy(_Protocol):
-    """A class for storing minimisation protocols."""
+    """A class for storing Dummy protocols."""
 
     def __init__(self):
         super().__init__()
