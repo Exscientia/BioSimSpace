@@ -2481,3 +2481,6 @@ class Amber(_process.Process):
 
             except KeyError:
                 return None
+
+    def saveMetric(self, filename=None):
+        stdout_dict = self._get_stdout_record()

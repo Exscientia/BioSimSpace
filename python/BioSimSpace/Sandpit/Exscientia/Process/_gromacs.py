@@ -29,6 +29,8 @@ __all__ = ["Gromacs"]
 import glob as _glob
 import os as _os
 
+import pandas as pd
+
 from .._Utils import _try_import
 
 _pygtail = _try_import("pygtail")
@@ -2591,6 +2593,12 @@ class Gromacs(_process.Process):
                     return None
         else:
             return self._traj_file
+
+    def saveMetric(self, filename=None, u_nk=None, dHdl=None):
+        self._update_energy_dict()
+        df = pd.DataFrame(data=self._energy_dict)
+        if filename:
+            df.to_parquet(path=f"{self.workDir()}/{filename}.parquet", index=True)
 
 
 def _is_minimisation(config):
