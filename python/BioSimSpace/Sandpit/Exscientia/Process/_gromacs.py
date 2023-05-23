@@ -48,6 +48,7 @@ from sire.legacy import IO as _SireIO
 from sire.legacy import Maths as _SireMaths
 from sire.legacy import Units as _SireUnits
 from sire.legacy import Vol as _SireVol
+from alchemlyb.parsing.gmx import extract
 
 from .. import _gmx_exe
 from .. import _isVerbose
@@ -2618,6 +2619,15 @@ class Gromacs(_process.Process):
         df = pd.DataFrame(data=datadict)
         df = df.set_index("Time (ps)")
         df.to_parquet(path=f"{self.workDir()}/{filename}", index=True)
+        if isinstance(self._protocol, _Protocol._FreeEnergyMixin):
+            energy = extract(
+                f"{self.workDir()}/{self._name}.xvg",
+                T=self._protocol.getTemperature() / _Units.Temperature.kelvin,
+            )
+            if "u_nk" in energy:
+                energy["u_nk"].to_parquet(path=f"{self.workDir()}/{u_nk}", index=True)
+            if "dHdl" in energy:
+                energy["dHdl"].to_parquet(path=f"{self.workDir()}/{dHdl}", index=True)
 
 
 def _is_minimisation(config):

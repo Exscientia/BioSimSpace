@@ -1,10 +1,13 @@
-import BioSimSpace.Sandpit.Exscientia as BSS
-
-from collections import OrderedDict
-
 import os
-import pytest
 import shutil
+from collections import OrderedDict
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import pytest
+
+import BioSimSpace.Sandpit.Exscientia as BSS
 
 # Make sure AMBER is installed.
 if BSS._amber_home is not None:
@@ -290,3 +293,41 @@ def test_parse_fep_output(system, protocol):
     # number of values.
     for v in records2.values():
         assert len(v) == num_records
+
+
+class TestsaveMetric:
+    @staticmethod
+    @pytest.fixture()
+    def setup(system):
+        # Copy the system.
+        system_copy = system.copy()
+
+        # Decouple a single molecule in the system.
+        mol = system_copy[0]
+        mol = BSS.Align.decouple(mol)
+        system_copy.updateMolecule(0, mol)
+
+        # Create a process using any system and the protocol.
+        process = BSS.Process.Amber(
+            system_copy,
+            BSS.Protocol.FreeEnergy(temperature=298 * BSS.Units.Temperature.kelvin),
+        )
+        shutil.copyfile(
+            "tests/Sandpit/Exscientia/output/amber_fep.out",
+            process.workDir() + "/amber.out",
+        )
+        process.saveMetric()
+        return process
+
+    def test_metric_parquet_exist(self, setup):
+        assert Path(f"{setup.workDir()}/metric.parquet").exists()
+
+    def test_u_nk_parquet_exist(self, setup):
+        assert Path(f"{setup.workDir()}/u_nk.parquet").exists()
+
+    def test_metric_parquet(self, setup):
+        df = pd.read_parquet(f"{setup.workDir()}/metric.parquet")
+        assert np.isclose(df["PotentialEnergy (kJ/mol)"][20.0], -90086.461304)
+        assert np.isclose(df["Volume (nm^3)"][20.0], 65.7242169)
+        assert np.isclose(df["Pressure (bar)"][20.0], 0.0)
+        assert np.isclose(df["Temperature (kelvin)"][20.0], 303.01)

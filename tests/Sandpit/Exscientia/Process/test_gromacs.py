@@ -4,6 +4,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
+from alchemtest.gmx import load_ABFE
 
 import BioSimSpace.Sandpit.Exscientia as BSS
 from BioSimSpace.Sandpit.Exscientia.Align import decouple
@@ -211,18 +212,22 @@ def run_process(system, protocol, **kwargs):
 class TestGetRecord:
     @staticmethod
     @pytest.fixture()
-    def setup(system):
-        protocol = BSS.Protocol.Production(
+    def setup(perturbable_system):
+        protocol = BSS.Protocol.FreeEnergy(
             runtime=BSS.Types.Time(60, "picosecond"),
             timestep=BSS.Types.Time(4, "femtosecond"),
             report_interval=200,
         )
-        process = BSS.Process.Gromacs(system, protocol)
+        process = BSS.Process.Gromacs(perturbable_system, protocol)
         shutil.copyfile(
             "tests/Sandpit/Exscientia/output/gromacs.edr",
             process.workDir() + "/gromacs.edr",
         )
-        process._update_energy_dict()
+        shutil.copyfile(
+            load_ABFE().data["ligand"][0],
+            process.workDir() + "/gromacs.xvg",
+        )
+        process.saveMetric()
         return process
 
     @pytest.mark.parametrize(
@@ -278,10 +283,16 @@ class TestGetRecord:
         else:
             np.testing.assert_almost_equal(energy / unit, value, decimal=3)
 
-    def test_saveMetric(self, setup):
-        setup.saveMetric("metric.parquet")
+    def test_metric_parquet_exist(self, setup):
         assert Path(f"{setup.workDir()}/metric.parquet").exists()
 
+    def test_dhdl_parquet_exist(self, setup):
+        assert Path(f"{setup.workDir()}/dHdl.parquet").exists()
+
+    def test_u_nk_parquet_exist(self, setup):
+        assert Path(f"{setup.workDir()}/u_nk.parquet").exists()
+
+    def test_metric_parquet(self, setup):
         df = pd.read_parquet(f"{setup.workDir()}/metric.parquet")
         assert np.isclose(df["PotentialEnergy (kJ/mol)"][0.0], -64480.589844)
         assert np.isclose(df["Volume (nm^3)"][0.0], 44.679958)
