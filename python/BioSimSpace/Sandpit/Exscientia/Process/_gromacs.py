@@ -2594,11 +2594,30 @@ class Gromacs(_process.Process):
         else:
             return self._traj_file
 
-    def saveMetric(self, filename=None, u_nk=None, dHdl=None):
+    def saveMetric(
+        self, filename="metric.parquet", u_nk="u_nk.parquet", dHdl="dHdl.parquet"
+    ):
         self._update_energy_dict()
-        df = pd.DataFrame(data=self._energy_dict)
-        if filename:
-            df.to_parquet(path=f"{self.workDir()}/{filename}.parquet", index=True)
+        datadict = {
+            "Time (ps)": [time / _Units.Time.picosecond for time in self.getTime(True)],
+            "PotentialEnergy (kJ/mol)": [
+                energy / _Units.Energy.kj_per_mol
+                for energy in self.getPotentialEnergy(True)
+            ],
+            "Volume (nm^3)": [
+                volume / _Units.Volume.nanometer3 for volume in self.getVolume(True)
+            ],
+            "Pressure (bar)": [
+                pressure / _Units.Pressure.bar for pressure in self.getPressure(True)
+            ],
+            "Temperature (kelvin)": [
+                temperature / _Units.Temperature.kelvin
+                for temperature in self.getTemperature(True)
+            ],
+        }
+        df = pd.DataFrame(data=datadict)
+        df = df.set_index("Time (ps)")
+        df.to_parquet(path=f"{self.workDir()}/{filename}", index=True)
 
 
 def _is_minimisation(config):

@@ -1,5 +1,8 @@
-import numpy as np
 import shutil
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
 import pytest
 
 import BioSimSpace.Sandpit.Exscientia as BSS
@@ -274,3 +277,13 @@ class TestGetRecord:
             np.testing.assert_almost_equal(energy[0] / unit, value, decimal=3)
         else:
             np.testing.assert_almost_equal(energy / unit, value, decimal=3)
+
+    def test_saveMetric(self, setup):
+        setup.saveMetric("metric.parquet")
+        assert Path(f"{setup.workDir()}/metric.parquet").exists()
+
+        df = pd.read_parquet(f"{setup.workDir()}/metric.parquet")
+        assert np.isclose(df["PotentialEnergy (kJ/mol)"][0.0], -64480.589844)
+        assert np.isclose(df["Volume (nm^3)"][0.0], 44.679958)
+        assert np.isclose(df["Pressure (bar)"][0.0], 119.490417)
+        assert np.isclose(df["Temperature (kelvin)"][0.0], 306.766907)
