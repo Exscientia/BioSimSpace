@@ -2598,6 +2598,12 @@ class Gromacs(_process.Process):
     def saveMetric(
         self, filename="metric.parquet", u_nk="u_nk.parquet", dHdl="dHdl.parquet"
     ):
+        """
+        Helper function to save the simulation metrics to `filename`, which is a
+        pandas dataframe that can be loaded with `pd.read_parquet`. if the protocol
+        is Free Energy protocol, the dHdl and the u_nk data will be saved in the
+        same parquet format as well.
+        """
         self._update_energy_dict()
         datadict = {
             "Time (ps)": [time / _Units.Time.picosecond for time in self.getTime(True)],

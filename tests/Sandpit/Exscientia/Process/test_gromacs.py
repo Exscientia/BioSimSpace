@@ -286,15 +286,23 @@ class TestGetRecord:
     def test_metric_parquet_exist(self, setup):
         assert Path(f"{setup.workDir()}/metric.parquet").exists()
 
-    def test_dhdl_parquet_exist(self, setup):
-        assert Path(f"{setup.workDir()}/dHdl.parquet").exists()
-
-    def test_u_nk_parquet_exist(self, setup):
-        assert Path(f"{setup.workDir()}/u_nk.parquet").exists()
-
     def test_metric_parquet(self, setup):
         df = pd.read_parquet(f"{setup.workDir()}/metric.parquet")
         assert np.isclose(df["PotentialEnergy (kJ/mol)"][0.0], -64480.589844)
         assert np.isclose(df["Volume (nm^3)"][0.0], 44.679958)
         assert np.isclose(df["Pressure (bar)"][0.0], 119.490417)
         assert np.isclose(df["Temperature (kelvin)"][0.0], 306.766907)
+
+    def test_dhdl_parquet_exist(self, setup):
+        assert Path(f"{setup.workDir()}/dHdl.parquet").exists()
+
+    def test_dhdl_parquet(self, setup):
+        df = pd.read_parquet(f"{setup.workDir()}/dHdl.parquet")
+        assert df.shape == (1001, 2)
+
+    def test_u_nk_parquet_exist(self, setup):
+        assert Path(f"{setup.workDir()}/u_nk.parquet").exists()
+
+    def test_u_nk_parquet(self, setup):
+        df = pd.read_parquet(f"{setup.workDir()}/u_nk.parquet")
+        assert df.shape == (1001, 20)

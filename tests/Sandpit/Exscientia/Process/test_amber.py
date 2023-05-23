@@ -322,12 +322,16 @@ class TestsaveMetric:
     def test_metric_parquet_exist(self, setup):
         assert Path(f"{setup.workDir()}/metric.parquet").exists()
 
-    def test_u_nk_parquet_exist(self, setup):
-        assert Path(f"{setup.workDir()}/u_nk.parquet").exists()
-
     def test_metric_parquet(self, setup):
         df = pd.read_parquet(f"{setup.workDir()}/metric.parquet")
         assert np.isclose(df["PotentialEnergy (kJ/mol)"][20.0], -90086.461304)
         assert np.isclose(df["Volume (nm^3)"][20.0], 65.7242169)
         assert np.isclose(df["Pressure (bar)"][20.0], 0.0)
         assert np.isclose(df["Temperature (kelvin)"][20.0], 303.01)
+
+    def test_u_nk_parquet_exist(self, setup):
+        assert Path(f"{setup.workDir()}/u_nk.parquet").exists()
+
+    def test_u_nk_parquet(self, setup):
+        df = pd.read_parquet(f"{setup.workDir()}/u_nk.parquet")
+        assert df.shape == (50, 16)
