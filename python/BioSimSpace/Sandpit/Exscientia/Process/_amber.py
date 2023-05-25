@@ -2524,9 +2524,7 @@ class Amber(_process.Process):
         df = pd.DataFrame(data=datadict)
         df = df.set_index("Time (ps)")
         df.to_parquet(path=f"{self.workDir()}/{filename}", index=True)
-        if isinstance(self._protocol, _Protocol._FreeEnergyMixin) and not isinstance(
-            self._protocol, _Protocol.Minimisation
-        ):
+        if isinstance(self._protocol, _Protocol.FreeEnergy):
             energy = extract(
                 f"{self.workDir()}/{self._name}.out",
                 T=self._protocol.getTemperature() / _Units.Temperature.kelvin,
