@@ -2494,36 +2494,38 @@ class Amber(_process.Process):
         is Free Energy protocol, the dHdl and the u_nk data will be saved in the
         same parquet format as well.
         """
+        datadict = dict()
         if isinstance(self._protocol, _Protocol.Minimisation):
-            time = self.getStep(True)
-            energy = [
+            datadict["Time (ps)"] = self.getStep(True)
+            datadict["PotentialEnergy (kJ/mol)"] = [
                 energy / _Units.Energy.kj_per_mol
                 for energy in self.getTotalEnergy(True)
             ]
         else:
-            time = [time / _Units.Time.picosecond for time in self.getTime(True)]
-            energy = [
+            datadict["Time (ps)"] = [
+                time / _Units.Time.picosecond for time in self.getTime(True)
+            ]
+            datadict["PotentialEnergy (kJ/mol)"] = [
                 energy / _Units.Energy.kj_per_mol
                 for energy in self.getPotentialEnergy(True)
             ]
-        datadict = {
-            "Time (ps)": time,
-            "PotentialEnergy (kJ/mol)": energy,
-            "Volume (nm^3)": [
+            datadict["Volume (nm^3)"] = [
                 volume / _Units.Volume.nanometer3 for volume in self.getVolume(True)
-            ],
-            "Pressure (bar)": [
+            ]
+            datadict["Pressure (bar)"] = [
                 pressure / _Units.Pressure.bar for pressure in self.getPressure(True)
-            ],
-            "Temperature (kelvin)": [
+            ]
+            datadict["Temperature (kelvin)"] = [
                 temperature / _Units.Temperature.kelvin
                 for temperature in self.getTemperature(True)
-            ],
-        }
+            ]
+
         df = pd.DataFrame(data=datadict)
         df = df.set_index("Time (ps)")
         df.to_parquet(path=f"{self.workDir()}/{filename}", index=True)
-        if isinstance(self._protocol, _Protocol._FreeEnergyMixin):
+        if isinstance(self._protocol, _Protocol._FreeEnergyMixin) and not isinstance(
+            self._protocol, _Protocol.Minimisation
+        ):
             energy = extract(
                 f"{self.workDir()}/{self._name}.out",
                 T=self._protocol.getTemperature() / _Units.Temperature.kelvin,
