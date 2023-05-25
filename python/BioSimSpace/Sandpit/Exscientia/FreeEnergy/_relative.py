@@ -633,19 +633,41 @@ class Relative:
         else:
             raise ValueError("'estimator' must be either 'MBAR' or 'TI'.")
 
-        dir = work_dir + "/lambda_*/"
+        try:
+            # Use the parquet files if they are available.
+            workflow = ABFE(
+                units="kcal/mol",
+                software="PARQUET",
+                dir=work_dir,
+                prefix="/lambda_*/" + prefix,
+                suffix="parquet",
+                T=temperature / _Units.Temperature.kelvin,
+                outdirectory=work_dir,
+                **kwargs,
+            )
+            workflow.run(estimators=estimator, breakdown=None, forwrev=None, **kwargs)
+        except:
+            if engine == "AMBER":
+                prefix = "amber"
+                suffix = "out"
+            elif engine == "GROMACS":
+                prefix = "gromacs"
+                suffix = "xvg"
+            else:
+                raise ValueError(f"{engine} has to be either 'AMBER' or " f"'GROMACS'.")
 
-        workflow = ABFE(
-            units="kcal/mol",
-            software="PARQUET",
-            dir=dir,
-            prefix=prefix,
-            suffix="parquet",
-            T=temperature / _Units.Temperature.kelvin,
-            outdirectory=work_dir,
-            **kwargs,
-        )
-        workflow.run(estimators=estimator, breakdown=None, forwrev=None, **kwargs)
+            workflow = ABFE(
+                units="kcal/mol",
+                software=engine,
+                dir=work_dir,
+                prefix="lambda_*/" + prefix,
+                suffix=suffix,
+                T=temperature / _Units.Temperature.kelvin,
+                outdirectory=work_dir,
+                **kwargs,
+            )
+            workflow.run(estimators=estimator, breakdown=None, forwrev=None, **kwargs)
+
         # Extract the data from the mbar results.
         data = []
         # convert the data frames to kcal/mol
