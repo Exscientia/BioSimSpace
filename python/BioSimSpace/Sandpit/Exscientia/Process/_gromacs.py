@@ -2605,8 +2605,12 @@ class Gromacs(_process.Process):
         same parquet format as well.
         """
         self._update_energy_dict()
+        if isinstance(self._protocol, _Protocol.Minimisation):
+            time = self.getStep(True)
+        else:
+            time = [time / _Units.Time.picosecond for time in self.getTime(True)]
         datadict = {
-            "Time (ps)": [time / _Units.Time.picosecond for time in self.getTime(True)],
+            "Time (ps)": time,
             "PotentialEnergy (kJ/mol)": [
                 energy / _Units.Energy.kj_per_mol
                 for energy in self.getPotentialEnergy(True)

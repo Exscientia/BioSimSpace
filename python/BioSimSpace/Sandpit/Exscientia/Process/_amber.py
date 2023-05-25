@@ -2494,8 +2494,12 @@ class Amber(_process.Process):
         is Free Energy protocol, the dHdl and the u_nk data will be saved in the
         same parquet format as well.
         """
+        if isinstance(self._protocol, _Protocol.Minimisation):
+            time = self.getStep(True)
+        else:
+            time = [time / _Units.Time.picosecond for time in self.getTime(True)]
         datadict = {
-            "Time (ps)": [time / _Units.Time.picosecond for time in self.getTime(True)],
+            "Time (ps)": time,
             "PotentialEnergy (kJ/mol)": [
                 energy / _Units.Energy.kj_per_mol
                 for energy in self.getPotentialEnergy(True)
