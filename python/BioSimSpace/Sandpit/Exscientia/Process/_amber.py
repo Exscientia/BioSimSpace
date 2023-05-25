@@ -2509,9 +2509,10 @@ class Amber(_process.Process):
                 energy / _Units.Energy.kj_per_mol
                 for energy in self.getPotentialEnergy(True)
             ]
-            datadict["Volume (nm^3)"] = [
-                volume / _Units.Volume.nanometer3 for volume in self.getVolume(True)
-            ]
+            if self.getVolume():
+                datadict["Volume (nm^3)"] = [
+                    volume / _Units.Volume.nanometer3 for volume in self.getVolume(True)
+                ]
             datadict["Pressure (bar)"] = [
                 pressure / _Units.Pressure.bar for pressure in self.getPressure(True)
             ]

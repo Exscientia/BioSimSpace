@@ -917,11 +917,7 @@ class Gromacs(_process.Process):
             The current simulation time in nanoseconds.
         """
 
-        if isinstance(self._protocol, _Protocol.Minimisation):
-            return None
-
-        else:
-            return self.getRecord("TIME", time_series, _Units.Time.picosecond, block)
+        return self.getRecord("TIME", time_series, _Units.Time.picosecond, block)
 
     def getCurrentTime(self, time_series=False):
         """
@@ -2605,27 +2601,27 @@ class Gromacs(_process.Process):
         same parquet format as well.
         """
         self._update_energy_dict()
-        if isinstance(self._protocol, _Protocol.Minimisation):
-            time = self.getStep(True)
-        else:
-            time = [time / _Units.Time.picosecond for time in self.getTime(True)]
         datadict = {
-            "Time (ps)": time,
+            "Time (ps)": [time / _Units.Time.picosecond for time in self.getTime(True)],
             "PotentialEnergy (kJ/mol)": [
                 energy / _Units.Energy.kj_per_mol
                 for energy in self.getPotentialEnergy(True)
             ],
-            "Volume (nm^3)": [
-                volume / _Units.Volume.nanometer3 for volume in self.getVolume(True)
-            ],
-            "Pressure (bar)": [
+        }
+        if not isinstance(self._protocol, _Protocol.Minimisation):
+            if self.getVolume():
+                datadict["Volume (nm^3)"] = [
+                    volume / _Units.Volume.nanometer3 for volume in self.getVolume(True)
+                ]
+            datadict["Pressure (bar)"] = [
                 pressure / _Units.Pressure.bar for pressure in self.getPressure(True)
-            ],
-            "Temperature (kelvin)": [
+            ]
+
+            datadict["Temperature (kelvin)"] = [
                 temperature / _Units.Temperature.kelvin
                 for temperature in self.getTemperature(True)
-            ],
-        }
+            ]
+
         df = pd.DataFrame(data=datadict)
         df = df.set_index("Time (ps)")
         df.to_parquet(path=f"{self.workDir()}/{filename}", index=True)
