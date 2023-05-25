@@ -2496,14 +2496,19 @@ class Amber(_process.Process):
         """
         if isinstance(self._protocol, _Protocol.Minimisation):
             time = self.getStep(True)
+            energy = [
+                energy / _Units.Energy.kj_per_mol
+                for energy in self.getTotalEnergy(True)
+            ]
         else:
             time = [time / _Units.Time.picosecond for time in self.getTime(True)]
-        datadict = {
-            "Time (ps)": time,
-            "PotentialEnergy (kJ/mol)": [
+            energy = [
                 energy / _Units.Energy.kj_per_mol
                 for energy in self.getPotentialEnergy(True)
-            ],
+            ]
+        datadict = {
+            "Time (ps)": time,
+            "PotentialEnergy (kJ/mol)": energy,
             "Volume (nm^3)": [
                 volume / _Units.Volume.nanometer3 for volume in self.getVolume(True)
             ],
