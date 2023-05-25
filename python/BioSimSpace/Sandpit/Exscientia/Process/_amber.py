@@ -2521,7 +2521,10 @@ class Amber(_process.Process):
                 for temperature in self.getTemperature(True)
             ]
 
-        df = pd.DataFrame(data=datadict)
+        try:
+            df = pd.DataFrame(data=datadict)
+        except:
+            print(datadict)
         df = df.set_index("Time (ps)")
         df.to_parquet(path=f"{self.workDir()}/{filename}", index=True)
         if isinstance(self._protocol, _Protocol.FreeEnergy):
