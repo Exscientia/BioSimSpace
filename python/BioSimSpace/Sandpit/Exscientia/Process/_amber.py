@@ -26,6 +26,7 @@ __email__ = "lester.hedges@gmail.com"
 
 __all__ = ["Amber"]
 
+import warnings
 
 from .._Utils import _try_import
 
@@ -2523,8 +2524,13 @@ class Amber(_process.Process):
 
         try:
             df = pd.DataFrame(data=datadict)
-        except:
-            print(datadict)
+        except ValueError:
+            length_dict = {key: len(value) for key, value in datadict.items()}
+            warnings.warn(f'Not all metric has the same number of data points ({length_dict}).'
+                          f'All columns will be truncated the same length.')
+            length = min(length_dict.values())
+            new_datadict = {key: value[:length] for key, value in datadict.items()}
+            df = pd.DataFrame(data=new_datadict)
         df = df.set_index("Time (ps)")
         df.to_parquet(path=f"{self.workDir()}/{filename}", index=True)
         if isinstance(self._protocol, _Protocol.FreeEnergy):
