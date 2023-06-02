@@ -646,7 +646,7 @@ class Relative:
                 **kwargs,
             )
             workflow.run(estimators=estimator, breakdown=None, forwrev=None, **kwargs)
-        except:
+        except ValueError:
             if engine == "AMBER":
                 prefix = "amber"
                 suffix = "out"

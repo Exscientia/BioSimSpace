@@ -28,7 +28,7 @@ __all__ = ["Gromacs"]
 
 import glob as _glob
 import os as _os
-import warnings
+import warnings as _warnings
 
 import pandas as pd
 
@@ -2627,7 +2627,7 @@ class Gromacs(_process.Process):
             df = pd.DataFrame(data=datadict)
         except ValueError:
             length_dict = {key: len(value) for key, value in datadict.items()}
-            warnings.warn(f'Not all metric has the same number of data points ({length_dict}).'
+            _warnings.warn(f'Not all metric has the same number of data points ({length_dict}).'
                           f'All columns will be truncated the same length.')
             length = min(length_dict.values())
             new_datadict = {key: value[:length] for key, value in datadict.items()}
