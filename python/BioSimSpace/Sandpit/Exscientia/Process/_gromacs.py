@@ -2288,8 +2288,8 @@ class Gromacs(_process.Process):
         key = key.replace("BAR", "")
         return key
 
-    def _update_energy_dict(self):
-        if len(self._energy_dict) == 0:
+    def _update_energy_dict(self, initialise=False):
+        if initialise or len(self._energy_dict) == 0:
             self._initialise_energy_dict()
 
         keys = self._energy_keys
@@ -2601,7 +2601,7 @@ class Gromacs(_process.Process):
         is Free Energy protocol, the dHdl and the u_nk data will be saved in the
         same parquet format as well.
         """
-        self._update_energy_dict()
+        self._update_energy_dict(initialise=True)
         datadict = {
             "Time (ps)": [
                 time / _Units.Time.picosecond
