@@ -2496,33 +2496,34 @@ class Amber(_process.Process):
         """
         datadict = dict()
         if isinstance(self._protocol, _Protocol.Minimisation):
-            datadict["Time (ps)"] = self.getStep(True, block=False)
-            datadict["PotentialEnergy (kJ/mol)"] = [
-                energy / _Units.Energy.kj_per_mol
-                for energy in self.getTotalEnergy(True, block=False)
+            datadict_keys = [
+                ("Time (ps)", None, "getStep"),
+                (
+                    "PotentialEnergy (kJ/mol)",
+                    _Units.Energy.kj_per_mol,
+                    "getTotalEnergy",
+                ),
             ]
         else:
-            datadict["Time (ps)"] = [
-                time / _Units.Time.picosecond
-                for time in self.getTime(True, block=False)
+            datadict_keys = [
+                ("Time (ps)", _Units.Time.picosecond, "getTime"),
+                (
+                    "PotentialEnergy (kJ/mol)",
+                    _Units.Energy.kj_per_mol,
+                    "getPotentialEnergy",
+                ),
+                ("Volume (nm^3)", _Units.Volume.nanometer3, "getVolume"),
+                ("Pressure (bar)", _Units.Pressure.bar, "getPressure"),
+                ("Temperature (kelvin)", _Units.Temperature.kelvin, "getTemperature"),
             ]
-            datadict["PotentialEnergy (kJ/mol)"] = [
-                energy / _Units.Energy.kj_per_mol
-                for energy in self.getPotentialEnergy(True, block=False)
-            ]
-            if self.getVolume(block=False):
-                datadict["Volume (nm^3)"] = [
-                    volume / _Units.Volume.nanometer3
-                    for volume in self.getVolume(True, block=False)
-                ]
-            datadict["Pressure (bar)"] = [
-                pressure / _Units.Pressure.bar
-                for pressure in self.getPressure(True, block=False)
-            ]
-            datadict["Temperature (kelvin)"] = [
-                temperature / _Units.Temperature.kelvin
-                for temperature in self.getTemperature(True, block=False)
-            ]
+
+        for key, unit, method in datadict_keys:
+            values = getattr(self, method)(True, block=False)
+            if values is not None:
+                if unit is not None:
+                    datadict[key] = [value / unit for value in values]
+                else:
+                    datadict[key] = values
 
         try:
             df = pd.DataFrame(data=datadict)
