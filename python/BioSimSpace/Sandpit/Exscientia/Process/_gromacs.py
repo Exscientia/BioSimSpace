@@ -2622,24 +2622,7 @@ class Gromacs(_process.Process):
                     ),
                 ]
             )
-        datadict = {}
-        for key, unit, method in datadict_keys:
-            values = getattr(self, method)(True, block=False)
-            if values is not None:
-                datadict[key] = [value / unit for value in values]
-
-        try:
-            df = pd.DataFrame(data=datadict)
-        except ValueError:
-            length_dict = {key: len(value) for key, value in datadict.items()}
-            _warnings.warn(
-                f"Not all metric has the same number of data points ({length_dict})."
-                f"All columns will be truncated the same length."
-            )
-            length = min(length_dict.values())
-            new_datadict = {key: value[:length] for key, value in datadict.items()}
-            df = pd.DataFrame(data=new_datadict)
-        df = df.set_index("Time (ps)")
+        df = self._convert_datadict_keys(datadict_keys)
         df.to_parquet(path=f"{self.workDir()}/{filename}", index=True)
         if isinstance(self._protocol, _Protocol.FreeEnergy):
             energy = extract(
