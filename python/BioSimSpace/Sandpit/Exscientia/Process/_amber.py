@@ -2494,6 +2494,21 @@ class Amber(_process.Process):
         is Free Energy protocol, the dHdl and the u_nk data will be saved in the
         same parquet format as well.
         """
+        # Ensure that the Record is freshly read from the output file.
+        # The use case is that we could generate a process, start and wait which
+        # fill the cache with content.
+        # Then we swap in new coordinate to the work_dir and do start and wait,
+        # where the cache would contain output from both previous run and the new
+        # run.
+        # This step reinitialised the cache such that when this function is called,
+        # it is guaranteed to read data from the new output file.
+        self._stdout_dict = [
+            _process._MultiDict(),
+            _process._MultiDict(),
+            _process._MultiDict(),
+        ]
+        self._stdout_key = [{}, {}, {}]
+
         datadict = dict()
         if isinstance(self._protocol, _Protocol.Minimisation):
             datadict_keys = [
