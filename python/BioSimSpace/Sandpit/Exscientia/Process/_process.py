@@ -1675,7 +1675,7 @@ class Process:
                 else:
                     datadict[key] = values
             else:
-                _warnings.warn(f"No value has been extracted for the key (key).")
+                _warnings.warn(f"No value has been extracted for the key ({key}).")
         try:
             df = pd.DataFrame(data=datadict)
         except ValueError:
