@@ -2487,7 +2487,14 @@ class Amber(_process.Process):
             except KeyError:
                 return None
 
-    def _init_stdout(self):
+    def _init_stdout_dict(self):
+        """Initiate the _stdout_dict to parse from the output files from a fresh start.
+
+        This is needed when one reused the same process object. The use case is that one
+        generate a Process object, start and wait. Then swap in a new coordinate file
+        into the working directory, start and wait again. In this case, the result will
+        be a combination of both runs. This function ensures that the results are
+        regenerated from the new output file."""
         # Initialise dictionaries to hold stdout records for all possible
         # degrees of freedom. For regular simulations there will be one,
         # for free-energy simulations there will be three, i.e. one for
@@ -2521,7 +2528,7 @@ class Amber(_process.Process):
         is Free Energy protocol, the dHdl and the u_nk data will be saved in the
         same parquet format as well.
         """
-        self._init_stdout()
+        self._init_stdout_dict()
         datadict = dict()
         if isinstance(self._protocol, _Protocol.Minimisation):
             datadict_keys = [
