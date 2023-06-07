@@ -2622,8 +2622,8 @@ class Gromacs(_process.Process):
                     ),
                 ]
             )
-        # df = self._convert_datadict_keys(datadict_keys)
-        # df.to_parquet(path=f"{self.workDir()}/{filename}", index=True)
+        df = self._convert_datadict_keys(datadict_keys)
+        df.to_parquet(path=f"{self.workDir()}/{filename}", index=True)
         if isinstance(self._protocol, _Protocol.FreeEnergy):
             energy = extract(
                 f"{self.workDir()}/{self._name}.xvg",

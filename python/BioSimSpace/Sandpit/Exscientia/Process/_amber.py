@@ -26,6 +26,7 @@ __email__ = "lester.hedges@gmail.com"
 
 __all__ = ["Amber"]
 
+from pathlib import Path as _Path
 
 from .._Utils import _try_import
 
@@ -2485,6 +2486,30 @@ class Amber(_process.Process):
             except KeyError:
                 return None
 
+    def _init_stdout(self):
+        # Initialise dictionaries to hold stdout records for all possible
+        # degrees of freedom. For regular simulations there will be one,
+        # for free-energy simulations there will be three, i.e. one for
+        # each of the TI regions and one for the soft-core part of the system.
+        self._stdout_dict = [
+            _process._MultiDict(),
+            _process._MultiDict(),
+            _process._MultiDict(),
+        ]
+
+        # Initialise mappings between "universal" stdout keys, and the actual
+        # record key used for the different degrees of freedom in the AMBER
+        # output.
+        self._stdout_key = [{}, {}, {}]
+
+        # Initialise log file parsing flags.
+        self._has_results = False
+        self._finished_results = False
+        self._is_header = False
+        #
+        # # Initiate the pytails.
+        # for file in _Path(self.workDir()).glob('')
+
     def saveMetric(
         self, filename="metric.parquet", u_nk="u_nk.parquet", dHdl="dHdl.parquet"
     ):
@@ -2494,6 +2519,7 @@ class Amber(_process.Process):
         is Free Energy protocol, the dHdl and the u_nk data will be saved in the
         same parquet format as well.
         """
+        self._init_stdout()
         datadict = dict()
         if isinstance(self._protocol, _Protocol.Minimisation):
             datadict_keys = [
@@ -2517,8 +2543,8 @@ class Amber(_process.Process):
                 ("Temperature (kelvin)", _Units.Temperature.kelvin, "getTemperature"),
             ]
         # # Disable this now
-        # df = self._convert_datadict_keys(datadict_keys)
-        # df.to_parquet(path=f"{self.workDir()}/{filename}", index=True)
+        df = self._convert_datadict_keys(datadict_keys)
+        df.to_parquet(path=f"{self.workDir()}/{filename}", index=True)
         if isinstance(self._protocol, _Protocol.FreeEnergy):
             energy = extract(
                 f"{self.workDir()}/{self._name}.out",
