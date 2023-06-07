@@ -26,6 +26,7 @@ __email__ = "lester.hedges@gmail.com"
 
 __all__ = ["Amber"]
 
+import os
 from pathlib import Path as _Path
 
 from .._Utils import _try_import
@@ -2506,9 +2507,10 @@ class Amber(_process.Process):
         self._has_results = False
         self._finished_results = False
         self._is_header = False
-        #
-        # # Initiate the pytails.
-        # for file in _Path(self.workDir()).glob('')
+
+        # Initiate the pytails.
+        for file in _Path(self.workDir()).glob("*.out.offset"):
+            os.remove(file)
 
     def saveMetric(
         self, filename="metric.parquet", u_nk="u_nk.parquet", dHdl="dHdl.parquet"
