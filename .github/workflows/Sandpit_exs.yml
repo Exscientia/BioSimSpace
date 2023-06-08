@@ -39,6 +39,8 @@ jobs:
           python -m pip install git+https://github.com/Exscientia/MDRestraintsGenerator.git
           # For the testing of BSS.FreeEnergy.Relative.analysis
           python -m pip install https://github.com/alchemistry/alchemtest/archive/master.zip
+          # Before the new alchemlyb is released
+          python -m pip git+https://github.com/alchemistry/alchemlyb.git
 
       - name: Install the dev version
         run: |
