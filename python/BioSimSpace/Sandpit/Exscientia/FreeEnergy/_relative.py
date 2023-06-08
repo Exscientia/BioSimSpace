@@ -530,6 +530,7 @@ class Relative:
             "SOMD": "/lambda_*/gradients.dat",
             "GROMACS": "/lambda_*/gromacs.xvg",
             "AMBER": "/lambda_*/amber.out",
+            "PARQUET": "/lambda_*/*.parquet",
         }
 
         for engine, mask in mask_dict.items():
