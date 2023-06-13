@@ -14,9 +14,10 @@ def make_ml(molecule):
     Mark the molecule as being represented as a ML ligand.
 
     This enables one to use
-    System.getMLMolecules() to get the ML molecule.
-    System.nMLMolecules() to get the number of ML molecule.
-    Moleule.isML() to check if a molecule is a ML molecule.
+
+        * :meth:`~BioSimSpace.Sandpit.Exscientia._SireWrappers._system.System.getMLMolecules` to get the ML molecule.
+        * :meth:`~BioSimSpace.Sandpit.Exscientia._SireWrappers._system.System.nMLMolecules` to get the number of ML molecule.
+        * :meth:`~BioSimSpace.Sandpit.Exscientia._SireWrappers._molecule.Molecule.isML` to check if a molecule is a ML molecule.
 
 
     Parameters
