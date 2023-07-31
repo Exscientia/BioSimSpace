@@ -128,7 +128,8 @@ def _squash_molecule(molecule, explicit_dummies=False):
             environment=False,
             dummies=False,
         )
-        assert set(atom_mapping0_common) == set(atom_mapping1_common)
+        if set(atom_mapping0_common) == set(atom_mapping1_common):
+            raise RuntimeError("The MCS atoms don't match between the two endstates")
         common_atoms = set(atom_mapping0_common)
 
         # We make sure we use the same coordinates for the common core at both endstates.
@@ -304,7 +305,8 @@ def _unsquash_molecule(molecule, squashed_molecules, explicit_dummies=False):
         environment=False,
         dummies=False,
     )
-    assert set(atom_mapping0_common) == set(atom_mapping1_common)
+    if set(atom_mapping0_common) == set(atom_mapping1_common):
+        raise RuntimeError("The MCS atoms don't match between the two endstates")
     common_atoms = set(atom_mapping0_common)
 
     # Get the atom mapping from both endstates
