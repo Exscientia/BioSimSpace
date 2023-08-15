@@ -2649,6 +2649,7 @@ class Gromacs(_process.Process):
         is Free Energy protocol, the dHdl and the u_nk data will be saved in the
         same parquet format as well.
         """
+
         _assert_imported(_alchemlyb)
 
         self._update_energy_dict(initialise=True)
