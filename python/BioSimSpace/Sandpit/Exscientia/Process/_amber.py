@@ -2930,20 +2930,13 @@ class Amber(_process.Process):
         df = self._convert_datadict_keys(datadict_keys)
         df.to_parquet(path=f"{self.workDir()}/{filename}", index=True)
         if isinstance(self._protocol, _Protocol.FreeEnergy):
-            try:
-                energy = _extract(
-                    f"{self.workDir()}/{self._name}.out",
-                    T=self._protocol.getTemperature() / _Units.Temperature.kelvin,
-                )
-                if "u_nk" in energy and energy["u_nk"] is not None:
-                    energy["u_nk"].to_parquet(path=f"{self.workDir()}/{u_nk}", index=True)
-                if "dHdl" in energy and energy["dHdl"] is not None:
-                    energy["dHdl"].to_parquet(path=f"{self.workDir()}/{dHdl}", index=True)
-            except Exception:
-                exception_info = traceback.format_exc()
-                with open(f"{self.workDir()}/{self._name}.err", 'a+') as f:
-                    f.write("Exception Information during the generation of the free energy parquet file:\n")
-                    f.write("======================\n")
-                    f.write(exception_info)
-                    f.write("\n\n")
+            energy = _extract(
+                f"{self.workDir()}/{self._name}.out",
+                T=self._protocol.getTemperature() / _Units.Temperature.kelvin,
+            )
+            if "u_nk" in energy and energy["u_nk"] is not None:
+                energy["u_nk"].to_parquet(path=f"{self.workDir()}/{u_nk}", index=True)
+            if "dHdl" in energy and energy["dHdl"] is not None:
+                energy["dHdl"].to_parquet(path=f"{self.workDir()}/{dHdl}", index=True)
+
 

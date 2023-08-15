@@ -353,7 +353,7 @@ class TestGetRecord:
         process.saveMetric()
         with open(process.workDir() + '/gromacs.err', 'r') as f:
             text = f.read()
-            assert 'Exception Information during the generation of the free energy parquet file:' in text
+            assert 'Exception Information' in text
 
 
 @pytest.mark.skipif(

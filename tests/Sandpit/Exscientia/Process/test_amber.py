@@ -350,23 +350,16 @@ class TestsaveMetric:
         process.saveMetric()
         return process
 
-    def test_error_alchemlyb_extract(self, alchemical_system, monkeypatch):
-        def extract(*args):
-            raise ValueError('alchemlyb.parsing.amber.extract failed.')
-        monkeypatch.setattr('alchemlyb.parsing.amber.extract', extract)
+    def test_error_alchemlyb_extract(self, alchemical_system):
         # Create a process using any system and the protocol.
         process = BSS.Process.Amber(
             alchemical_system,
             BSS.Protocol.FreeEnergy(temperature=298 * BSS.Units.Temperature.kelvin),
         )
-        shutil.copyfile(
-            "tests/Sandpit/Exscientia/output/amber_fep.out",
-            process.workDir() + "/amber.out",
-        )
         process.saveMetric()
         with open(process.workDir() + '/amber.err', 'r') as f:
             text = f.read()
-            assert 'Exception Information during the generation of the free energy parquet file:' in text
+            assert 'Exception Information' in text
 
 
     def test_metric_parquet_exist(self, setup):
