@@ -383,5 +383,3 @@ class TestsaveMetric:
         process = BSS.Process.Amber(system, BSS.Protocol.Production())
         with pytest.warns(match="Simulation didn't produce any output."):
             process.saveMetric()
-
-

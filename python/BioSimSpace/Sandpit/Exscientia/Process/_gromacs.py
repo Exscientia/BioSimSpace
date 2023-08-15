@@ -28,7 +28,6 @@ __all__ = ["Gromacs"]
 
 import glob as _glob
 import os as _os
-import traceback
 import warnings as _warnings
 
 import pandas as pd
@@ -2684,7 +2683,6 @@ class Gromacs(_process.Process):
                 energy["u_nk"].to_parquet(path=f"{self.workDir()}/{u_nk}", index=True)
             if "dHdl" in energy:
                 energy["dHdl"].to_parquet(path=f"{self.workDir()}/{dHdl}", index=True)
-
 
 
 def _is_minimisation(config):

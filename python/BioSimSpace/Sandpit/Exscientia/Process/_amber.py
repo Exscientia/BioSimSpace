@@ -27,7 +27,6 @@ __email__ = "lester.hedges@gmail.com"
 __all__ = ["Amber"]
 
 import os
-import traceback
 from pathlib import Path as _Path
 
 from .._Utils import _try_import
@@ -2938,5 +2937,3 @@ class Amber(_process.Process):
                 energy["u_nk"].to_parquet(path=f"{self.workDir()}/{u_nk}", index=True)
             if "dHdl" in energy and energy["dHdl"] is not None:
                 energy["dHdl"].to_parquet(path=f"{self.workDir()}/{dHdl}", index=True)
-
-
