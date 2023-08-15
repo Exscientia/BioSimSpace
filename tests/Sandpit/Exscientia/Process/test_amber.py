@@ -15,7 +15,7 @@ from tests.Sandpit.Exscientia.conftest import url, has_amber, has_pyarrow
 @pytest.fixture(scope="session")
 def system():
     """Re-use the same molecuar system for each test."""
-    return BSS.IO.readMolecules(["tests/input/ala.top", "tests/input/ala.crd"])
+    return BSS.IO.readMolecules(["../../../input/ala.top", "../../../input/ala.crd"])
 
 
 @pytest.mark.skipif(
@@ -320,14 +320,11 @@ def test_parse_fep_output(system, protocol):
         assert len(records_sc1) != 0
 
 
-@pytest.mark.skipif(
-    has_amber is False or has_pyarrow is False,
-    reason="Requires AMBER and pyarrow to be installed.",
-)
+
 class TestsaveMetric:
     @staticmethod
     @pytest.fixture()
-    def setup(system):
+    def alchemical_system(system):
         # Copy the system.
         system_copy = system.copy()
 
@@ -335,10 +332,15 @@ class TestsaveMetric:
         mol = system_copy[0]
         mol = BSS.Align.decouple(mol)
         system_copy.updateMolecule(0, mol)
+        return system_copy
 
+
+    @staticmethod
+    @pytest.fixture()
+    def setup(alchemical_system):
         # Create a process using any system and the protocol.
         process = BSS.Process.Amber(
-            system_copy,
+            alchemical_system,
             BSS.Protocol.FreeEnergy(temperature=298 * BSS.Units.Temperature.kelvin),
         )
         shutil.copyfile(
@@ -347,6 +349,21 @@ class TestsaveMetric:
         )
         process.saveMetric()
         return process
+
+    def test_error_alchemlyb_extract(self, alchemical_system, monkeypatch):
+        def extract(*args):
+            raise ValueError('alchemlyb.parsing.amber.extract failed.')
+        monkeypatch.setattr('alchemlyb.parsing.amber.extract', extract)
+        # Create a process using any system and the protocol.
+        process = BSS.Process.Amber(
+            alchemical_system,
+            BSS.Protocol.FreeEnergy(temperature=298 * BSS.Units.Temperature.kelvin),
+        )
+        process.saveMetric()
+        with open(process.workDir() + '/amber.err', 'r') as f:
+            text = f.read()
+            assert 'Exception Information during the generation of the free energy parquet file:' in text
+
 
     def test_metric_parquet_exist(self, setup):
         assert Path(f"{setup.workDir()}/metric.parquet").exists()
@@ -369,3 +386,5 @@ class TestsaveMetric:
         process = BSS.Process.Amber(system, BSS.Protocol.Production())
         with pytest.warns(match="Simulation didn't produce any output."):
             process.saveMetric()
+
+
