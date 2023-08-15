@@ -359,6 +359,10 @@ class TestsaveMetric:
             alchemical_system,
             BSS.Protocol.FreeEnergy(temperature=298 * BSS.Units.Temperature.kelvin),
         )
+        shutil.copyfile(
+            "tests/Sandpit/Exscientia/output/amber_fep.out",
+            process.workDir() + "/amber.out",
+        )
         process.saveMetric()
         with open(process.workDir() + '/amber.err', 'r') as f:
             text = f.read()
