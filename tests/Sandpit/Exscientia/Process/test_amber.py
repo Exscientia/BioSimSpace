@@ -15,7 +15,7 @@ from tests.Sandpit.Exscientia.conftest import url, has_amber, has_pyarrow
 @pytest.fixture(scope="session")
 def system():
     """Re-use the same molecuar system for each test."""
-    return BSS.IO.readMolecules(["../../../input/ala.top", "../../../input/ala.crd"])
+    return BSS.IO.readMolecules(["input/ala.top", "input/ala.crd"])
 
 
 @pytest.mark.skipif(
