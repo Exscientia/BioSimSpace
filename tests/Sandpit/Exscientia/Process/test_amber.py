@@ -304,7 +304,7 @@ def test_parse_fep_output(system, protocol):
 class TestsaveMetric:
     @staticmethod
     @pytest.fixture()
-    def setup(system):
+    def alchemical_system(system):
         # Copy the system.
         system_copy = system.copy()
 
@@ -312,10 +312,15 @@ class TestsaveMetric:
         mol = system_copy[0]
         mol = BSS.Align.decouple(mol)
         system_copy.updateMolecule(0, mol)
+        return system_copy
 
+
+    @staticmethod
+    @pytest.fixture()
+    def setup(alchemical_system):
         # Create a process using any system and the protocol.
         process = BSS.Process.Amber(
-            system_copy,
+            alchemical_system,
             BSS.Protocol.FreeEnergy(temperature=298 * BSS.Units.Temperature.kelvin),
         )
         shutil.copyfile(
@@ -324,6 +329,18 @@ class TestsaveMetric:
         )
         process.saveMetric()
         return process
+
+    def test_error_alchemlyb_extract(self, alchemical_system):
+        # Create a process using any system and the protocol.
+        process = BSS.Process.Amber(
+            alchemical_system,
+            BSS.Protocol.FreeEnergy(temperature=298 * BSS.Units.Temperature.kelvin),
+        )
+        process.wait()
+        with open(process.workDir() + '/amber.err', 'r') as f:
+            text = f.read()
+            assert 'Exception Information' in text
+
 
     def test_metric_parquet_exist(self, setup):
         assert Path(f"{setup.workDir()}/metric.parquet").exists()

@@ -306,3 +306,63 @@ class TestGetRecord:
     def test_u_nk_parquet(self, setup):
         df = pd.read_parquet(f"{setup.workDir()}/u_nk.parquet")
         assert df.shape == (1001, 20)
+
+    def test_error_alchemlyb_extract(self, perturbable_system, monkeypatch):
+        def extract(*args):
+            raise ValueError('alchemlyb.parsing.gmx.extract failed.')
+        monkeypatch.setattr('alchemlyb.parsing.gmx.extract', extract)
+        # Create a process using any system and the protocol.
+        process = BSS.Process.Gromacs(
+            perturbable_system,
+            BSS.Protocol.FreeEnergy(temperature=298 * BSS.Units.Temperature.kelvin),
+        )
+        process.wait()
+        with open(process.workDir() + '/gromacs.err', 'r') as f:
+            text = f.read()
+            assert 'Exception Information' in text
+
+
+@pytest.mark.skipif(
+    has_amber is False
+    or has_gromacs is False
+    or has_openff is False
+    or has_pyarrow is False,
+    reason="Requires AMBER, GROMACS, OpenFF, and pyarrow to be installed.",
+)
+def test_vacuum_com():
+    """
+    Test to ensure that the center of mass is moved to the origin following
+    vacuum simulation. Because of the need to fake vacuum simulations by
+    using an extremeley large box, molecular coordinates can exceed the
+    format limit used by certain molecular file formats, e.g. AMBER RST7.
+    As such, we translate the center of mass of the system to the origin.
+    """
+
+    # Create a test molecule.
+    mol = BSS.Parameters.openff_unconstrained_2_0_0("CC").getMolecule()
+
+    # Create a short minimisation protocol.
+    protocol = BSS.Protocol.Minimisation(steps=100)
+
+    # Create a process object.
+    process = BSS.Process.Gromacs(mol.toSystem(), protocol)
+
+    # Start the process and wait for it to finish.
+    process.start()
+    process.wait()
+
+    # Make sure it worked.
+    assert not process.isError()
+
+    # Get the minimised system.
+    system = process.getSystem()
+
+    # Make sure it worked.
+    assert system is not None
+
+    # Get the center of mass.
+    com = system._getCenterOfMass()
+
+    # Make sure each component is close to zero.
+    for x in com:
+        assert math.isclose(x.value(), 0, abs_tol=1e-6)
