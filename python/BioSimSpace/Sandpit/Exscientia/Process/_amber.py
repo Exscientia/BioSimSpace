@@ -186,7 +186,7 @@ class Amber(_process.Process):
         self._is_header = False
 
         # The names of the input files.
-        self._rst_file = "%s/%s.rst7" % (self._work_dir, name)
+        self._rst_file = "%s/%s.rst" % (self._work_dir, name)
         self._top_file = "%s/%s.prm7" % (self._work_dir, name)
 
         # The name of the trajectory file.
@@ -196,7 +196,7 @@ class Amber(_process.Process):
         self._config_file = "%s/%s.cfg" % (self._work_dir, name)
 
         # Set the reference system
-        self._ref_file = f"{self._work_dir}/{name}_ref.rst7"
+        self._ref_file = f"{self._work_dir}/{name}_ref.rst"
         self._ref_system = reference_system
 
         # Create the list of input files.
@@ -285,9 +285,9 @@ class Amber(_process.Process):
         if coord_file is not None:
             try:
                 file = _os.path.splitext(coord_file)[0]
-                _IO.saveMolecules(file, system, "rst7", property_map=self._property_map)
+                _IO.saveMolecules(file, system, "rst", property_map=self._property_map)
             except Exception as e:
-                msg = "Failed to write system to 'RST7' format."
+                msg = "Failed to write system to 'rst' format."
                 if _isVerbose():
                     raise IOError(msg) from e
                 else:
@@ -297,9 +297,9 @@ class Amber(_process.Process):
         if ref_file is not None:
             try:
                 file = _os.path.splitext(ref_file)[0]
-                _IO.saveMolecules(file, system, "rst7", property_map=self._property_map)
+                _IO.saveMolecules(file, system, "rst", property_map=self._property_map)
             except Exception as e:
-                msg = "Failed to write system to 'RST7' format."
+                msg = "Failed to write system to 'rst' format."
                 if _isVerbose():
                     raise IOError(msg) from e
                 else:
@@ -505,7 +505,7 @@ class Amber(_process.Process):
         self.setArg("-O", True)  # Overwrite.
         self.setArg("-i", "%s.cfg" % self._name)  # Input file.
         self.setArg("-p", "%s.prm7" % self._name)  # Topology file.
-        self.setArg("-c", "%s.rst7" % self._name)  # Coordinate file.
+        self.setArg("-c", "%s.rst" % self._name)  # Coordinate file.
         self.setArg("-o", "%s.out" % self._name)  # Redirect stdout to file.
         self.setArg("-r", "%s.crd" % self._name)  # Restart file.
         self.setArg("-inf", "%s.nrg" % self._name)  # Energy info file.
@@ -515,7 +515,7 @@ class Amber(_process.Process):
             # Append a reference file if this a restrained simulation.
             if isinstance(self._protocol, _Protocol._PositionRestraintMixin):
                 if self._protocol.getRestraint() is not None:
-                    self.setArg("-ref", "%s_ref.rst7" % self._name)
+                    self.setArg("-ref", "%s_ref.rst" % self._name)
 
             # Append a trajectory file if this anything other than a minimisation.
             if not isinstance(self._protocol, _Protocol.Minimisation):
