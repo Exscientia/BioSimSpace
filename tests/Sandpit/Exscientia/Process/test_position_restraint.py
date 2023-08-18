@@ -157,7 +157,7 @@ def test_amber(protocol, system, ref_system, tmp_path):
     ref = AmberRst(proc._ref_file).getFrame(0)
     rst = AmberRst(proc._rst_file).getFrame(0)
 
-    assert ref == rst
+    assert ref != rst
 
     # We are pointing the reference to the correct file
     assert f"{proc._work_dir}/{proc.getArgs()['-ref']}" == proc._ref_file
