@@ -288,7 +288,7 @@ class Amber(_process.Process):
                 file = _os.path.splitext(coord_file)[0]
                 _IO.saveMolecules(file, system, "rst", property_map=self._property_map)
                 # To keep the file extension the same.
-                shutil.move(f'{file}.rst', f'{file}.rst7')
+                shutil.move(f"{file}.rst", f"{file}.rst7")
             except Exception as e:
                 msg = "Failed to write system to 'rst7' format."
                 if _isVerbose():
@@ -302,7 +302,7 @@ class Amber(_process.Process):
                 file = _os.path.splitext(ref_file)[0]
                 _IO.saveMolecules(file, system, "rst", property_map=self._property_map)
                 # To keep the file extension the same.
-                shutil.move(f'{file}.rst', f'{file}.rst7')
+                shutil.move(f"{file}.rst", f"{file}.rst7")
             except Exception as e:
                 msg = "Failed to write system to 'rst7' format."
                 if _isVerbose():
