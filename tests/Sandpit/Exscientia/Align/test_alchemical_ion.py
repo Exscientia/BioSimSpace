@@ -2,6 +2,7 @@ import pytest
 
 import BioSimSpace.Sandpit.Exscientia as BSS
 from BioSimSpace.Sandpit.Exscientia.Align._alch_ion import _mark_alchemical_ion
+from BioSimSpace.Sandpit.Exscientia._SireWrappers import Molecule
 
 from tests.conftest import root_fp
 
@@ -17,7 +18,8 @@ def system():
 
 @pytest.fixture
 def alchemical_ion_system(system):
-    ion = _mark_alchemical_ion(system[-1])
+    ion = system[-1]
+    ion = _mark_alchemical_ion(ion)
     system.updateMolecules(ion)
     return system
 
@@ -29,6 +31,7 @@ def test_isAlchemicalIon(input_system, isalchem, request):
     system = request.getfixturevalue(input_system)
     assert system[-1].isAlchemicalIon() is isalchem
 
+
 @pytest.mark.parametrize(
     "input_system,isalchem", [("system", None), ("alchemical_ion_system", True)]
 )
@@ -38,5 +41,9 @@ def test_getAlchemicalIon(input_system, isalchem, request):
     if isalchem is None:
         assert ion is None
     else:
-        assert isinstance(ion, BSS._SireWrappers.)
-    assert .isAlchemicalIon()
+        assert isinstance(ion, Molecule)
+
+
+def test_getAlchemicalIonIdx(alchemical_ion_system):
+    index = alchemical_ion_system.getAlchemicalIonIdx()
+    assert index == 680
