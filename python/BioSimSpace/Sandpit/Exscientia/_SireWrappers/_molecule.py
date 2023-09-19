@@ -528,10 +528,7 @@ class Molecule(_SireWrapper):
         isAlchemicalIon : bool
             Whether the molecule is marked as Alchemical Ion.
         """
-        if self._sire_object.hasProperty("AlchemicalIon"):
-            return True
-        else:
-            return False
+        return self._sire_object.hasProperty("AlchemicalIon")
 
     def isWater(self, property_map={}):
         """

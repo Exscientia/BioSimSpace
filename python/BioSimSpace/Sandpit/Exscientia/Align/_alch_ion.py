@@ -1,5 +1,6 @@
+import warnings
+
 from .._SireWrappers import Molecule as _Molecule
-from .._Exceptions import IncompatibleError as _IncompatibleError
 
 
 def _mark_alchemical_ion(molecule):
@@ -34,9 +35,7 @@ def _mark_alchemical_ion(molecule):
 
     # Cannot decouple a perturbable molecule.
     if molecule.isAlchemicalIon():
-        raise _IncompatibleError(
-            "'molecule' has already been marked as alchemical ion!"
-        )
+        warnings.warn("'molecule' has already been marked as alchemical ion!")
 
     # Create a copy of this molecule.
     mol = _Molecule(molecule)
