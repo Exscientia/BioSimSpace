@@ -17,7 +17,7 @@ def _mark_alchemical_ion(molecule):
     ----------
 
     molecule : BioSimSpace._SireWrappers.Molecule
-        The molecule to be marked as ML ligand.
+        The molecule to be marked as alchemical ion.
 
     Returns
     -------
