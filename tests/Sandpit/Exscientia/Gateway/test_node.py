@@ -152,7 +152,7 @@ def test_missing_file():
     assert proc.returncode != 0
 
     # Replace with a missing file.
-    invalid_command = command.replace(f"{root_fp}/input/ala.top", "file=missing.txt")
+    invalid_command = command.replace("tests/input/ala.top", "file=missing.txt")
 
     # Run the command.
     proc = subprocess.run(
