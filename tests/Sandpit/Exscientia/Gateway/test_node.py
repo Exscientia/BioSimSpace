@@ -4,9 +4,10 @@ import shlex
 import sys
 
 import BioSimSpace.Sandpit.Exscientia as BSS
+from tests.conftest import root_fp
 
 # Store the name of the test script.
-script_name = "tests/Gateway/node.py"
+script_name = f"{root_fp}/Gateway/node.py"
 
 # Store the name of the python interpreter.
 exe = sys.executable
@@ -151,7 +152,7 @@ def test_missing_file():
     assert proc.returncode != 0
 
     # Replace with a missing file.
-    invalid_command = command.replace("tests/input/ala.top", "file=missing.txt")
+    invalid_command = command.replace(f"{root_fp}/input/ala.top", "file=missing.txt")
 
     # Run the command.
     proc = subprocess.run(

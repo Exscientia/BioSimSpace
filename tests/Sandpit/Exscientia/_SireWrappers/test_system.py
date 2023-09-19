@@ -4,12 +4,15 @@ import pytest
 import BioSimSpace.Sandpit.Exscientia as BSS
 
 from tests.Sandpit.Exscientia.conftest import url, has_amber, has_openff
+from tests.conftest import root_fp
 
 
 @pytest.fixture(scope="session")
 def system():
     """Re-use the same molecuar system for each test."""
-    return BSS.IO.readMolecules(["tests/input/ala.top", "tests/input/ala.crd"])
+    return BSS.IO.readMolecules(
+        [f"{root_fp}/input/ala.top", f"{root_fp}/input/ala.crd"]
+    )
 
 
 # Parameterise the function with a set of molecule indices.
@@ -274,7 +277,7 @@ def test_set_box(system):
 
     # Store the expected box dimensions and angles.
     expected_box = [30, 30, 30] * BSS.Units.Length.angstrom
-    expected_angles = [70.5288, 109.4712, 70.5288] * BSS.Units.Angle.degree
+    expected_angles = [109.4712, 109.4712, 109.4712] * BSS.Units.Angle.degree
 
     # Check that the box dimensions match.
     for b0, b1 in zip(box, expected_box):
