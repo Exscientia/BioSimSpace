@@ -1125,9 +1125,10 @@ class System(_SireWrapper):
         molecule : [:class:`Molecule <BioSimSpace._SireWrappers.Molecule>`]
             The Alchemical Ion or None if there isn't any.
         """
-        return _Molecules(
-            self._sire_object.search("molecules with property AlchemicalIon").toGroup()
-        )
+        try:
+            return self.search("mols with property AlchemicalIon").molecules()[0]
+        except:
+            return None
 
     def getAlchemicalIonIdx(self):
         """
