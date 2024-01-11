@@ -687,7 +687,7 @@ class AlchemicalFreeEnergy:
 
         try:
             workflow.run(estimators=estimator, breakdown=None, forwrev=None, **kwargs)
-        except ValueError:
+        except:
             warnings.warn("Decorrelation failed, run with no decorrelation.")
             workflow.run(
                 estimators=estimator,
