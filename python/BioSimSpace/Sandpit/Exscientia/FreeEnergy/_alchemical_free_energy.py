@@ -33,6 +33,7 @@ import os as _os
 import shutil as _shutil
 import subprocess as _subprocess
 import sys as _sys
+import warnings
 import warnings as _warnings
 import zipfile as _zipfile
 from glob import glob as _glob
@@ -655,20 +656,16 @@ class AlchemicalFreeEnergy:
         else:
             raise ValueError("'estimator' must be either 'MBAR' or 'TI'.")
 
-        try:
-            # Use the parquet files if they are available.
-            workflow = ABFE(
-                units="kcal/mol",
-                software="PARQUET",
-                dir=work_dir,
-                prefix="/lambda_*/" + prefix,
-                suffix="parquet",
-                T=temperature / _Units.Temperature.kelvin,
-                outdirectory=work_dir,
-                **kwargs,
-            )
-            workflow.run(estimators=estimator, breakdown=None, forwrev=None, **kwargs)
-        except ValueError:
+        workflow = ABFE(
+            units="kcal/mol",
+            software="PARQUET",
+            dir=work_dir,
+            prefix="/lambda_*/" + prefix,
+            suffix="parquet",
+            T=temperature / _Units.Temperature.kelvin,
+            outdirectory=work_dir,
+        )
+        if not len(workflow.file_list):
             if engine == "AMBER":
                 prefix = "amber"
                 suffix = "out"
@@ -686,9 +683,19 @@ class AlchemicalFreeEnergy:
                 suffix=suffix,
                 T=temperature / _Units.Temperature.kelvin,
                 outdirectory=work_dir,
+            )
+
+        try:
+            workflow.run(estimators=estimator, breakdown=None, forwrev=None, **kwargs)
+        except ValueError:
+            warnings.warn("Decorrelation failed, run with no decorrelation.")
+            workflow.run(
+                estimators=estimator,
+                breakdown=None,
+                forwrev=None,
+                uncorr=None,
                 **kwargs,
             )
-            workflow.run(estimators=estimator, breakdown=None, forwrev=None, **kwargs)
 
         # Extract the data from the mbar results.
         data = []
