@@ -656,16 +656,17 @@ class AlchemicalFreeEnergy:
         else:
             raise ValueError("'estimator' must be either 'MBAR' or 'TI'.")
 
-        workflow = ABFE(
-            units="kcal/mol",
-            software="PARQUET",
-            dir=work_dir,
-            prefix="/lambda_*/" + prefix,
-            suffix="parquet",
-            T=temperature / _Units.Temperature.kelvin,
-            outdirectory=work_dir,
-        )
-        if not len(workflow.file_list):
+        try:
+            workflow = ABFE(
+                units="kcal/mol",
+                software="PARQUET",
+                dir=work_dir,
+                prefix="/lambda_*/" + prefix,
+                suffix="parquet",
+                T=temperature / _Units.Temperature.kelvin,
+                outdirectory=work_dir,
+            )
+        except ValueError:
             if engine == "AMBER":
                 prefix = "amber"
                 suffix = "out"
