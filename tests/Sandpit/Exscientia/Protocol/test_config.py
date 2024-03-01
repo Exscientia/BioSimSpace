@@ -322,7 +322,7 @@ class TestGromacsABFE:
             "atomtype",
             "coordinates",
             "velocity",
-            "ambertype"
+            "ambertype",
         ]:
             if f"{key}1" not in c and key in c:
                 c[f"{key}0"] = c[key]
@@ -339,10 +339,10 @@ class TestGromacsABFE:
         )
         with open(f"{freenrg._work_dir}/lambda_6/gromacs.mdp", "r") as f:
             mdp_text = f.read()
-            assert "couple-moltype = LIG" not in mdp_text
-            assert "couple-lambda0 = vdw-q" not in mdp_text
-            assert "couple-lambda1 = none" not in mdp_text
-            assert "couple-intramol = yes" not in mdp_text
+            assert "couple-moltype" not in mdp_text
+            assert "couple-lambda0" not in mdp_text
+            assert "couple-lambda1" not in mdp_text
+            assert "couple-intramol" not in mdp_text
 
 
     @pytest.mark.skipif(
