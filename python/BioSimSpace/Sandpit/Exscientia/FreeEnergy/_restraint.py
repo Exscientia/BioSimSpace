@@ -406,6 +406,10 @@ class Restraint:
 
         # Format the parameters for the bonds
         def format_bond(equilibrium_values, force_constants):
+            """
+            Format the bonds equilibrium values and force constant
+            in into the Gromacs topology format.
+            """
             converted_equ_val = (
                 self._restraint_dict["equilibrium_values"][equilibrium_values]
                 / _nanometer
@@ -422,26 +426,37 @@ class Restraint:
 
         # Format the parameters for the angles and dihedrals
         def format_angle(equilibrium_values, force_constants, restraint_lambda):
+            """
+            Format the angle equilibrium values and force constant
+            in into the Gromacs topology format.
+
+            For Boresch restraint, we might want the dihedral to be stored
+            under the [ dihedral_restraints ] and controlled by restraint-lambdas.
+            Instead of under the [ dihedrals ] directive and controlled by bonded-lambdas.
+
+            However, for dihedrals, the [ dihedral_restraints ] has a different function type
+            compared with [ dihedrals ] and more values for the force constant, so we need
+            to format them differently.
+
+            When restraint_lambda is True, the dihedrals will be stored in the dihedral_restraints.
+            """
             converted_equ_val = (
                 self._restraint_dict["equilibrium_values"][equilibrium_values] / _degree
             )
             converted_fc = self._restraint_dict["force_constants"][force_constants] / (
                 _kj_per_mol / (_radian * _radian)
             )
-            if restraint_lambda:
-                return dihedral_restraints_parameters_string.format(
-                    eq0="{:.3f}".format(converted_equ_val),
-                    fc0="{:.2f}".format(0),
-                    eq1="{:.3f}".format(converted_equ_val),
-                    fc1="{:.2f}".format(converted_fc),
-                )
-            else:
-                return parameters_string.format(
-                    eq0="{:.3f}".format(converted_equ_val),
-                    fc0="{:.2f}".format(0),
-                    eq1="{:.3f}".format(converted_equ_val),
-                    fc1="{:.2f}".format(converted_fc),
-                )
+            par_string = (
+                dihedral_restraints_parameters_string
+                if restraint_lambda
+                else parameters_string
+            )
+            return par_string.format(
+                eq0="{:.3f}".format(converted_equ_val),
+                fc0="{:.2f}".format(0),
+                eq1="{:.3f}".format(converted_equ_val),
+                fc1="{:.2f}".format(converted_fc),
+            )
 
         # basic format of the Gromacs string
         master_string = "  {index} {func_type} {parameters}"
@@ -466,8 +481,12 @@ class Restraint:
             key_list, equilibrium_values, force_constants, restraint_lambda
         ):
             if restraint_lambda:
+                # In [ dihedral_restraints ], function type 1
+                # means the dihedral is restrained harmonically.
                 func_type = 1
             else:
+                # In [ dihedrals ], function type 2
+                # means the dihedral is restrained harmonically.
                 func_type = 2
             return master_string.format(
                 index=format_index(key_list),
