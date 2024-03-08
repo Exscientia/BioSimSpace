@@ -248,6 +248,12 @@ class ConfigFactory:
             # Restrain the backbone.
             restraint = self.protocol.getRestraint()
 
+            if self.system.getAlchemicalIon():
+                index = self.system.getAlchemicalIonIdx()
+                alchemical_ion_mask = f"@{index}"
+            else:
+                alchemical_ion_mask = None
+
             if restraint is not None:
                 # Get the indices of the atoms that are restrained.
                 if type(restraint) is str:
@@ -293,9 +299,9 @@ class ConfigFactory:
                                     ]
                                 restraint_mask = "@" + ",".join(restraint_atom_names)
                             elif restraint == "heavy":
-                                restraint_mask = "!:WAT & !@H="
+                                restraint_mask = "!:WAT & !@%NA,CL & !@H="
                             elif restraint == "all":
-                                restraint_mask = "!:WAT"
+                                restraint_mask = "!:WAT & !@%NA,CL"
 
                         # We can't do anything about a custom restraint, since we don't
                         # know anything about the atoms.
@@ -304,13 +310,22 @@ class ConfigFactory:
                                 "AMBER atom 'restraintmask' exceeds 256 character limit!"
                             )
 
-                    protocol_dict["ntr"] = 1
-                    force_constant = self.protocol.getForceConstant()._sire_unit
-                    force_constant = force_constant.to(
-                        _SireUnits.kcal_per_mol / _SireUnits.angstrom2
-                    )
-                    protocol_dict["restraint_wt"] = force_constant
-                    protocol_dict["restraintmask"] = f'"{restraint_mask}"'
+            else:
+                restraint_mask = None
+
+            if restraint_mask or alchemical_ion_mask:
+                if restraint_mask and alchemical_ion_mask:
+                    restraint_mask = f"{restraint_mask} | {alchemical_ion_mask}"
+                elif alchemical_ion_mask:
+                    restraint_mask = alchemical_ion_mask
+
+                protocol_dict["ntr"] = 1
+                force_constant = self.protocol.getForceConstant()._sire_unit
+                force_constant = force_constant.to(
+                    _SireUnits.kcal_per_mol / _SireUnits.angstrom2
+                )
+                protocol_dict["restraint_wt"] = force_constant
+                protocol_dict["restraintmask"] = f'"{restraint_mask}"'
 
         # Pressure control.
         if not isinstance(self.protocol, _Protocol.Minimisation):

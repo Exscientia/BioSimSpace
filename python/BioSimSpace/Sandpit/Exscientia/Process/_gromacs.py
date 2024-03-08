@@ -2078,7 +2078,7 @@ class Gromacs(_process.Process):
         # Get the restraint type.
         restraint = self._protocol.getRestraint()
 
-        if restraint is not None:
+        if restraint is not None or self._system.getAlchemicalIon():
             # Get the force constant in units of kJ_per_mol/nanometer**2
             force_constant = self._protocol.getForceConstant()._sire_unit
             force_constant = force_constant.to(
@@ -2139,7 +2139,7 @@ class Gromacs(_process.Process):
                 sys_idx_moltypes[idx] = mol_type
 
             # A keyword restraint.
-            if isinstance(restraint, str):
+            if isinstance(restraint, str) or self._system.getAlchemicalIon():
                 # The number of restraint files.
                 num_restraint = 1
 
@@ -2156,12 +2156,27 @@ class Gromacs(_process.Process):
                     for idx, mol_idx in enumerate(mol_idxs):
                         # Get the indices of any restrained atoms in this molecule,
                         # making sure that indices are relative to the molecule.
-                        atom_idxs = self._system.getRestraintAtoms(
-                            restraint,
-                            mol_index=mol_idx,
-                            is_absolute=False,
-                            allow_zero_matches=True,
-                        )
+                        if restraint is not None:
+                            atom_idxs = self._system.getRestraintAtoms(
+                                restraint,
+                                mol_index=mol_idx,
+                                is_absolute=False,
+                                allow_zero_matches=True,
+                            )
+                        else:
+                            atom_idxs = []
+
+                        if self._system.getMolecule(mol_idx).isAlchemicalIon():
+                            alch_ion = self._system.getMolecule(mol_idx).getAtoms()
+                            alch_idx = alch_ion[0].index()
+                            if alch_idx != 0 or len(alch_ion) != 1:
+                                # The alchemical ions should only contain 1 atom
+                                # and the relative index should thus be 0.
+                                raise ValueError(
+                                    f"{self._system.getMolecule(mol_idx)} is marked as an alchemical ion but has more than 1 atom."
+                                )
+                            else:
+                                atom_idxs.append(alch_idx)
 
                         # Store the atom index if it hasn't already been recorded.
                         for atom_idx in atom_idxs:

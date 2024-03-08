@@ -8,6 +8,7 @@ import pytest
 import shutil
 
 import BioSimSpace.Sandpit.Exscientia as BSS
+from BioSimSpace.Sandpit.Exscientia.Align._alch_ion import _mark_alchemical_ion
 
 from tests.Sandpit.Exscientia.conftest import url, has_amber, has_pyarrow
 from tests.conftest import root_fp
@@ -19,6 +20,18 @@ def system():
     return BSS.IO.readMolecules(
         [f"{root_fp}/input/ala.top", f"{root_fp}/input/ala.crd"]
     )
+
+
+@pytest.fixture(scope="session")
+def alchemical_ion_system(system):
+    """A large protein system for re-use."""
+    solvated = BSS.Solvent.tip3p(
+        system, box=[4 * BSS.Units.Length.nanometer] * 3, ion_conc=0.15
+    )
+    ion = solvated.getMolecule(-1)
+    alchemcial_ion = _mark_alchemical_ion(ion)
+    solvated.updateMolecule(-1, alchemcial_ion)
+    return solvated
 
 
 @pytest.fixture(scope="session")
@@ -246,6 +259,27 @@ def test_backbone_restraint_mask_protein(large_protein_system):
     # Check that the correct restraint mask is in the config.
     config = process.getConfig()
     assert '   restraintmask="@N,CA,C,O",' in config
+
+
+@pytest.mark.parametrize(
+    ("restraint", "target"),
+    [
+        ("backbone", "@5-7,9,15-17 | @2148"),
+        ("heavy", "@2,5-7,9,11,15-17,19 | @2148"),
+        ("all", "@1-22 | @2148"),
+        ("none", "@2148"),
+    ],
+)
+def test_alchemical_ion_restraint_mask(alchemical_ion_system, restraint, target):
+    # Create an equilibration protocol with backbone restraints.
+    protocol = BSS.Protocol.Equilibration(restraint=restraint)
+
+    # Create the process object.
+    process = BSS.Process.Amber(alchemical_ion_system, protocol, name="test")
+
+    # Check that the correct restraint mask is in the config.
+    config = " ".join(process.getConfig())
+    assert target in config
 
 
 @pytest.mark.skipif(has_amber is False, reason="Requires AMBER to be installed.")
