@@ -1,5 +1,4 @@
 import warnings
-from typing import List
 
 from .._SireWrappers import Molecule as _Molecule, System as _System
 
@@ -53,7 +52,7 @@ def _mark_alchemical_ion(molecule):
     return mol
 
 
-def _get_protein_com_idx(system: _System) -> List[int]:
+def _get_protein_com_idx(system: _System) -> int:
     """return the index of the atom that is closet to the center of
     mass of the biggest molecule in the system.
 

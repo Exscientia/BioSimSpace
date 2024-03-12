@@ -7,7 +7,6 @@ import pandas as pd
 import pytest
 
 import BioSimSpace.Sandpit.Exscientia as BSS
-from BioSimSpace.Sandpit.Exscientia.Align._alch_ion import _mark_alchemical_ion
 from tests.Sandpit.Exscientia.conftest import has_amber, has_pyarrow
 from tests.conftest import root_fp
 
@@ -18,18 +17,6 @@ def system():
     return BSS.IO.readMolecules(
         [f"{root_fp}/input/ala.top", f"{root_fp}/input/ala.crd"]
     )
-
-
-@pytest.fixture(scope="session")
-def alchemical_ion_system(system):
-    """A large protein system for re-use."""
-    solvated = BSS.Solvent.tip3p(
-        system, box=[4 * BSS.Units.Length.nanometer] * 3, ion_conc=0.15
-    )
-    ion = solvated.getMolecule(-1)
-    alchemcial_ion = _mark_alchemical_ion(ion)
-    solvated.updateMolecule(-1, alchemcial_ion)
-    return solvated
 
 
 @pytest.fixture(scope="session")
