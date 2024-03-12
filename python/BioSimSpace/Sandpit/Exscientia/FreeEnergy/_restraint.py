@@ -1073,7 +1073,7 @@ class Restraint:
         dG = (
             k_boltz
             * self.T
-            * np.log(
+            * _np.log(
                 Z_angles[0]
                 * Z_angles[1]
                 * Z_dist
