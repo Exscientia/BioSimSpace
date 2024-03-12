@@ -212,8 +212,14 @@ def test_amber(alchemical_ion_system, restraint, target):
     protocol = BSS.Protocol.Equilibration(restraint=restraint)
 
     # Create the process object.
-    process = BSS.Process.Amber(alchemical_ion_system, protocol, name="test")
+    process = BSS.Process.Amber(
+        alchemical_ion_system,
+        protocol,
+        name="test",
+        reference_system=alchemical_ion_system,
+    )
 
     # Check that the correct restraint mask is in the config.
     config = " ".join(process.getConfig())
     assert target in config
+    assert "-ref test_ref.rst7" in process.getArgString()
