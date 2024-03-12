@@ -930,9 +930,9 @@ class Restraint:
                 return dg
 
             elif method == "analytical":
-                if flavour == "schrodinger":
+                if flavour.lower() == "schrodinger":
                     return self._schrodinger_analytical_correction()
-                elif flavour == "boresch":
+                elif flavour.lower() == "boresch":
                     return self._boresch_analytical_correction()
 
             else:
