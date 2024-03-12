@@ -28,9 +28,6 @@ __all__ = ["Gromacs"]
 
 import glob as _glob
 import os as _os
-import warnings as _warnings
-
-import pandas as pd
 
 from .._Utils import _try_import
 
@@ -2140,6 +2137,13 @@ class Gromacs(_process.Process):
                 moltypes_sys_idx[mol_type].append(idx)
                 sys_idx_moltypes[idx] = mol_type
 
+            if self._system.getAlchemicalIon():
+                biggest_mol_idx = max(
+                    range(system.nMolecules()), key=lambda x: system[x].nAtoms()
+                )
+            else:
+                biggest_mol_idx = -1
+
             # A keyword restraint.
             if isinstance(restraint, str) or self._system.getAlchemicalIon():
                 # The number of restraint files.
@@ -2179,6 +2183,15 @@ class Gromacs(_process.Process):
                                 )
                             else:
                                 atom_idxs.append(alch_idx)
+
+                        if mol_idx == biggest_mol_idx:
+                            # Only triggered when there is alchemical ion present.
+                            # The biggest_mol_idx is -1 when there is no alchemical ion.
+                            protein_com_idx = self._system.getMolecule(
+                                mol_idx
+                            ).getCOMIdx()
+                            if protein_com_idx not in atom_idxs:
+                                atom_idxs.append(protein_com_idx)
 
                         # Store the atom index if it hasn't already been recorded.
                         for atom_idx in atom_idxs:

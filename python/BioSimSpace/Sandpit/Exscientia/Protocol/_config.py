@@ -249,8 +249,9 @@ class ConfigFactory:
             restraint = self.protocol.getRestraint()
 
             if self.system.getAlchemicalIon():
-                index = self.system.getAlchemicalIonIdx()
-                alchemical_ion_mask = f"@{index}"
+                alchem_ion_idx = self.system.getAlchemicalIonIdx()
+                protein_com_idx = _get_protein_com_idx(self.system)
+                alchemical_ion_mask = f"@{alchem_ion_idx} | @{protein_com_idx}"
             else:
                 alchemical_ion_mask = None
 

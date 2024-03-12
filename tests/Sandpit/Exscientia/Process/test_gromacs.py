@@ -1,14 +1,12 @@
 import math
-import numpy as np
-import pytest
-import pandas as pd
 import shutil
-
 from pathlib import Path
 
-import BioSimSpace.Sandpit.Exscientia as BSS
-from BioSimSpace.Sandpit.Exscientia.Align._alch_ion import _mark_alchemical_ion
+import numpy as np
+import pandas as pd
+import pytest
 
+import BioSimSpace.Sandpit.Exscientia as BSS
 from BioSimSpace.Sandpit.Exscientia.Align import decouple
 from BioSimSpace.Sandpit.Exscientia.FreeEnergy import Restraint
 from BioSimSpace.Sandpit.Exscientia.Units.Angle import radian
@@ -18,16 +16,13 @@ from BioSimSpace.Sandpit.Exscientia.Units.Pressure import bar
 from BioSimSpace.Sandpit.Exscientia.Units.Temperature import kelvin
 from BioSimSpace.Sandpit.Exscientia.Units.Time import picosecond
 from BioSimSpace.Sandpit.Exscientia.Units.Volume import nanometer3
-from sire.legacy import Units as SireUnits
-
 from tests.Sandpit.Exscientia.conftest import (
-    url,
-    has_alchemlyb,
     has_alchemtest,
     has_amber,
     has_gromacs,
     has_openff,
     has_pyarrow,
+    url,
 )
 from tests.conftest import root_fp
 
@@ -38,25 +33,6 @@ def system():
     return BSS.IO.readMolecules(
         [f"{root_fp}/input/ala.top", f"{root_fp}/input/ala.crd"]
     )
-
-
-@pytest.fixture(scope="session")
-def alchemical_ion_system(system):
-    """A large protein system for re-use."""
-    solvated = BSS.Solvent.tip3p(
-        system, box=[4 * BSS.Units.Length.nanometer] * 3, ion_conc=0.15
-    )
-    ion = solvated.getMolecule(-1)
-    pert_ion = BSS.Align.merge(ion, ion, mapping={0: 0})
-    pert_ion._sire_object = (
-        pert_ion.getAtoms()[0]
-        ._sire_object.edit()
-        .setProperty("charge1", 0 * SireUnits.mod_electron)
-        .molecule()
-    )
-    alchemcial_ion = _mark_alchemical_ion(pert_ion)
-    solvated.updateMolecule(solvated.getIndex(ion), alchemcial_ion)
-    return solvated
 
 
 @pytest.fixture(scope="session")
@@ -457,27 +433,3 @@ def test_vacuum_com():
     # Make sure each component is close to zero.
     for x in com:
         assert math.isclose(x.value(), 0, abs_tol=1e-6)
-
-
-@pytest.mark.parametrize(
-    "restraint",
-    ["backbone", "heavy", "all", "none"],
-)
-def test_alchemical_ion_restraint_mask(alchemical_ion_system, restraint):
-    protocol = BSS.Protocol.FreeEnergy(restraint=restraint)
-    process = BSS.Process.Gromacs(alchemical_ion_system, protocol, name="test")
-    if restraint is "none":
-        posre_name = "posre_0001.itp"
-    else:
-        posre_name = "posre_0002.itp"
-    with open(f"{process.workDir()}/{posre_name}", "r") as f:
-        posres = f.read().split("\n")
-
-    assert posres[2].split() == ["1", "1", "4184.0", "4184.0", "4184.0"]
-    with open(f"{process.workDir()}/test.top", "r") as f:
-        top = f.read()
-    lines = top[top.index("Merged_Molecule") :].split("\n")
-    if restraint is "none":
-        assert lines[6] == '#include "posre_0001.itp"'
-    else:
-        assert lines[6] == '#include "posre_0002.itp"'

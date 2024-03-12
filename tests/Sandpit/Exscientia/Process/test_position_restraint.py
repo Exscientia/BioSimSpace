@@ -1,17 +1,18 @@
-from difflib import unified_diff
-
 import itertools
 import os
+from difflib import unified_diff
 
 import pandas as pd
 import pytest
+from sire.legacy import Units as SireUnits
 from sire.legacy.IO import AmberRst
 
 import BioSimSpace.Sandpit.Exscientia as BSS
+from BioSimSpace.Sandpit.Exscientia.Align._alch_ion import _mark_alchemical_ion
 from BioSimSpace.Sandpit.Exscientia.Units.Energy import kj_per_mol
 from BioSimSpace.Sandpit.Exscientia.Units.Length import angstrom
-
 from tests.Sandpit.Exscientia.conftest import has_amber, has_gromacs, has_openff
+from tests.conftest import root_fp
 
 
 @pytest.fixture
@@ -20,6 +21,28 @@ def system():
     mol0 = BSS.Parameters.parameterise("c1ccccc1C", ff).getMolecule()
     mol1 = BSS.Parameters.parameterise("c1ccccc1", ff).getMolecule()
     return BSS.Align.merge(mol0, mol1).toSystem()
+
+
+@pytest.fixture(scope="session")
+def alchemical_ion_system():
+    """A large protein system for re-use."""
+    system = BSS.IO.readMolecules(
+        [f"{root_fp}/input/ala.top", f"{root_fp}/input/ala.crd"]
+    )
+    solvated = BSS.Solvent.tip3p(
+        system, box=[4 * BSS.Units.Length.nanometer] * 3, ion_conc=0.15
+    )
+    ion = solvated.getMolecule(-1)
+    pert_ion = BSS.Align.merge(ion, ion, mapping={0: 0})
+    pert_ion._sire_object = (
+        pert_ion.getAtoms()[0]
+        ._sire_object.edit()
+        .setProperty("charge1", 0 * SireUnits.mod_electron)
+        .molecule()
+    )
+    alchemcial_ion = _mark_alchemical_ion(pert_ion)
+    solvated.updateMolecule(solvated.getIndex(ion), alchemcial_ion)
+    return solvated
 
 
 @pytest.fixture
@@ -146,3 +169,51 @@ def test_amber(protocol, system, ref_system, tmp_path):
 
     # We are pointing the reference to the correct file
     assert f"{proc._work_dir}/{proc.getArgs()['-ref']}" == proc._ref_file
+
+
+@pytest.mark.parametrize(
+    "restraint",
+    ["backbone", "heavy", "all", "none"],
+)
+def test_gromacs(alchemical_ion_system, restraint):
+    protocol = BSS.Protocol.FreeEnergy(restraint=restraint)
+    process = BSS.Process.Gromacs(alchemical_ion_system, protocol, name="test")
+
+    # Test the protein center
+    with open(f"{process.workDir()}/posre_0001.itp", "r") as f:
+        posres = f.read().split("\n")
+        posres = [tuple(line.split()) for line in posres]
+
+    assert ("9", "1", "4184.0", "4184.0", "4184.0") in posres
+
+    # Test the alchemical ion
+    with open(f"{process.workDir()}/test.top", "r") as f:
+        top = f.read()
+    lines = top[top.index("Merged_Molecule") :].split("\n")
+    assert lines[6] == '#include "posre_0002.itp"'
+
+    with open(f"{process.workDir()}/posre_0002.itp", "r") as f:
+        posres = f.read().split("\n")
+
+    assert posres[2].split() == ["1", "1", "4184.0", "4184.0", "4184.0"]
+
+
+@pytest.mark.parametrize(
+    ("restraint", "target"),
+    [
+        ("backbone", "@5-7,9,15-17 | @2148 | @8"),
+        ("heavy", "@2,5-7,9,11,15-17,19 | @2148 | @8"),
+        ("all", "@1-22 | @2148 | @8"),
+        ("none", "@2148 | @8"),
+    ],
+)
+def test_amber(alchemical_ion_system, restraint, target):
+    # Create an equilibration protocol with backbone restraints.
+    protocol = BSS.Protocol.Equilibration(restraint=restraint)
+
+    # Create the process object.
+    process = BSS.Process.Amber(alchemical_ion_system, protocol, name="test")
+
+    # Check that the correct restraint mask is in the config.
+    config = " ".join(process.getConfig())
+    assert target in config
