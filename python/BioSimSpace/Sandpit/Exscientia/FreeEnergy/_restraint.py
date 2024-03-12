@@ -1058,7 +1058,7 @@ class Restraint:
             Z_angle = (
                 sqrt(_np.pi / (beta * ktheta))
                 * exp(-1 / (4 * beta * ktheta))
-                * np.sin(theta)
+                * _np.sin(theta)
             )
             Z_angle /= _radian**3
             Z_angles.append(Z_angle)
