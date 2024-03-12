@@ -24,6 +24,7 @@ A class for holding restraints.
 """
 import math as _math
 import warnings as _warnings
+from typing import Literal
 
 import numpy as _np
 from scipy import integrate as _integrate
@@ -53,7 +54,9 @@ def sqrt(u):
     dims = u._sire_unit.dimensions()
     for dim in dims:
         if dim % 2 != 0:
-            raise ValueError("Not possible!")
+            raise ValueError(
+                "Square root not possible on dimension that is not divisible by 2!"
+            )
     return _GeneralUnit(
         _sire_GeneralUnit(_math.sqrt(u.value()), [int(0.5 * dim) for dim in dims])
     )
@@ -763,7 +766,11 @@ class Restraint:
 
         return str_fn(perturbation_type)
 
-    def getCorrection(self, method="analytical", flavour="Boresch"):
+    def getCorrection(
+        self,
+        method="analytical",
+        flavour: Literal["boresch", "schrodinger"] = "boresch",
+    ):
         """
         Calculate the free energy of releasing the restraint
         to the standard state volume.
@@ -779,8 +786,8 @@ class Restraint:
             distance is close to 0.
         flavour : str
             When analytical correction is used, one could either use
-            Boresch's derivation or Schrödinger's derivation. Both of
-            them ususally agress quite well with each other to the extent
+            Boresch's derivation or Schrodinger's derivation. Both of
+            them usually agrees quite well with each other to the extent
             of 0.2 kcal/mol.
 
         Returns
@@ -1034,6 +1041,7 @@ class Restraint:
                 return _get_correction(r0, r_fb, kr)
 
     def _schrodinger_analytical_correction(self):
+        # Adapted from DOI: 10.1021/acs.jcim.3c00013
         k_boltz = _GeneralUnit(_k_boltz)
         beta = 1 / (k_boltz * self.T)
         V = 1660 * _angstrom3
