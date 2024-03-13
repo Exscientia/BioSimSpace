@@ -4,6 +4,7 @@ from difflib import unified_diff
 
 import pandas as pd
 import pytest
+import sire as sr
 from sire.legacy import Units as SireUnits
 from sire.legacy.IO import AmberRst
 
@@ -11,6 +12,7 @@ import BioSimSpace.Sandpit.Exscientia as BSS
 from BioSimSpace.Sandpit.Exscientia.Align._alch_ion import _mark_alchemical_ion
 from BioSimSpace.Sandpit.Exscientia.Units.Energy import kj_per_mol
 from BioSimSpace.Sandpit.Exscientia.Units.Length import angstrom
+from BioSimSpace.Sandpit.Exscientia._SireWrappers import Molecule
 from tests.Sandpit.Exscientia.conftest import has_amber, has_gromacs, has_openff
 from tests.conftest import root_fp
 
@@ -43,6 +45,19 @@ def alchemical_ion_system():
     alchemcial_ion = _mark_alchemical_ion(pert_ion)
     solvated.updateMolecule(solvated.getIndex(ion), alchemcial_ion)
     return solvated
+
+
+@pytest.fixture(scope="session")
+def alchemical_ion_system_psores(alchemical_ion_system):
+    # Create a reference system with different coordinate
+    system = alchemical_ion_system.copy()
+    mol = system.getMolecule(0)
+    sire_mol = mol._sire_object
+    atoms = sire_mol.cursor().atoms()
+    atoms[0]["coordinates"] = sr.maths.Vector(0, 0, 0)
+    new_mol = atoms.commit()
+    system.updateMolecule(0, Molecule(new_mol))
+    return system
 
 
 @pytest.fixture
@@ -175,18 +190,23 @@ def test_amber(protocol, system, ref_system, tmp_path):
     "restraint",
     ["backbone", "heavy", "all", "none"],
 )
-def test_gromacs(alchemical_ion_system, restraint):
+def test_gromacs(alchemical_ion_system, restraint, alchemical_ion_system_psores):
     protocol = BSS.Protocol.FreeEnergy(restraint=restraint)
-    process = BSS.Process.Gromacs(alchemical_ion_system, protocol, name="test")
+    process = BSS.Process.Gromacs(
+        alchemical_ion_system,
+        protocol,
+        name="test",
+        reference_system=alchemical_ion_system_psores,
+    )
 
-    # Test the protein center
+    # Test the position restraint for protein center
     with open(f"{process.workDir()}/posre_0001.itp", "r") as f:
         posres = f.read().split("\n")
         posres = [tuple(line.split()) for line in posres]
 
     assert ("9", "1", "4184.0", "4184.0", "4184.0") in posres
 
-    # Test the alchemical ion
+    # Test the position restraint for alchemical ion
     with open(f"{process.workDir()}/test.top", "r") as f:
         top = f.read()
     lines = top[top.index("Merged_Molecule") :].split("\n")
@@ -196,6 +216,16 @@ def test_gromacs(alchemical_ion_system, restraint):
         posres = f.read().split("\n")
 
     assert posres[2].split() == ["1", "1", "4184.0", "4184.0", "4184.0"]
+
+    # Test if the original coordinate is correct
+    with open(f"{process.workDir()}/test.gro", "r") as f:
+        gro = f.read().splitlines()
+    assert gro[2].split() == ["1ACE", "HH31", "1", "1.791", "1.610", "2.058"]
+
+    # Test if the reference coordinate is passed
+    with open(f"{process.workDir()}/test_ref.gro", "r") as f:
+        gro = f.read().splitlines()
+    assert gro[2].split() == ["1ACE", "HH31", "1", "0.000", "0.000", "0.000"]
 
 
 @pytest.mark.parametrize(
@@ -207,7 +237,7 @@ def test_gromacs(alchemical_ion_system, restraint):
         ("none", "@2148 | @8"),
     ],
 )
-def test_amber(alchemical_ion_system, restraint, target):
+def test_amber(alchemical_ion_system, restraint, target, alchemical_ion_system_psores):
     # Create an equilibration protocol with backbone restraints.
     protocol = BSS.Protocol.Equilibration(restraint=restraint)
 
@@ -216,10 +246,24 @@ def test_amber(alchemical_ion_system, restraint, target):
         alchemical_ion_system,
         protocol,
         name="test",
-        reference_system=alchemical_ion_system,
+        reference_system=alchemical_ion_system_psores,
     )
 
     # Check that the correct restraint mask is in the config.
     config = " ".join(process.getConfig())
     assert target in config
+    # Check is the reference file is passed to the cmd
     assert "-ref test_ref.rst7" in process.getArgString()
+
+    # Test if the original coordinate is correct
+    original = BSS.IO.readMolecules(
+        [f"{process.workDir()}/test.prm7", f"{process.workDir()}/test.rst7"]
+    )
+    original_crd = original.getMolecule(0).coordinates()[0]
+    assert str(original_crd) == "(17.9138 A, 16.0981 A, 20.5786 A)"
+    # Test if the reference coordinate is passed
+    ref = BSS.IO.readMolecules(
+        [f"{process.workDir()}/test.prm7", f"{process.workDir()}/test_ref.rst7"]
+    )
+    ref_crd = ref.getMolecule(0).coordinates()[0]
+    assert str(ref_crd) == "(0.0000e+00 A, 0.0000e+00 A, 0.0000e+00 A)"

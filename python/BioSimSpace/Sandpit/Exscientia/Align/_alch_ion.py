@@ -53,7 +53,7 @@ def _mark_alchemical_ion(molecule):
 
 
 def _get_protein_com_idx(system: _System) -> int:
-    """return the index of the atom that is closet to the center of
+    """return the index of the atom that is closest to the center of
     mass of the biggest molecule in the system.
 
     Args:
