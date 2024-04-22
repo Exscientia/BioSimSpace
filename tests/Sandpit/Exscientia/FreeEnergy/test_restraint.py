@@ -92,7 +92,6 @@ def test_top_write(
         bss_protocol,
         work_dir=str(tmp_path),
         restraint=boresch_restraint,
-        exe="/Users/zwu/mambaforge/envs/BSS/bin.SSE2/gmx",
     )
     with open(str(tmp_path / "gromacs.top"), "r") as f:
         assert "intermolecular_interactions" in f.read()
