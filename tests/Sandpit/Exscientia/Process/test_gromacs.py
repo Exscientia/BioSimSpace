@@ -383,7 +383,7 @@ class TestGetRecord:
             perturbable_system,
             BSS.Protocol.FreeEnergy(temperature=298 * BSS.Units.Temperature.kelvin),
         )
-        process.wait()
+        process.saveMetric()
         with open(process.workDir() + "/gromacs.err", "r") as f:
             text = f.read()
             assert "Exception Information" in text
