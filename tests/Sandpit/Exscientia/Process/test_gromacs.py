@@ -389,6 +389,14 @@ class TestGetRecord:
             assert "Exception Information" in text
 
 
+def test_error_saveMetric(perturbable_system):
+    protocol = BSS.Protocol.FreeEnergy()
+    process = BSS.Process.Gromacs(perturbable_system, protocol)
+    process.saveMetric()
+    with open(f"{process.workDir()}/{process._name}.err", "r") as f:
+        assert "Exception Information during saveMetric():" in f.read()
+
+
 @pytest.mark.skipif(
     has_amber is False
     or has_gromacs is False
