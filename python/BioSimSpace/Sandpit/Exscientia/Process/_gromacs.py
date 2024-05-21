@@ -28,6 +28,7 @@ __all__ = ["Gromacs"]
 
 import glob as _glob
 import os as _os
+import time
 
 from .._Utils import _try_import
 
@@ -2872,6 +2873,7 @@ class Gromacs(_process.Process):
         same parquet format as well.
         """
         if filename is not None:
+            a = time.time()
             self._update_energy_dict(initialise=True)
             datadict_keys = [
                 ("Time (ps)", _Units.Time.picosecond, "getTime"),
@@ -2895,7 +2897,11 @@ class Gromacs(_process.Process):
                 )
             df = self._convert_datadict_keys(datadict_keys)
             df.to_parquet(path=f"{self.workDir()}/{filename}", index=True)
+            b = time.time()
+            with open(f"{self.workDir()}/time.log", "a+") as f:
+                f.write(f"metric: {b-a}")
         if u_nk is not None:
+            a = time.time()
             _assert_imported(_alchemlyb)
             if isinstance(self._protocol, _Protocol.FreeEnergy):
                 energy = _extract_u_nk(
@@ -2908,7 +2914,11 @@ class Gromacs(_process.Process):
                         message="The DataFrame has column names of mixed type.",
                     )
                     energy.to_parquet(path=f"{self.workDir()}/{u_nk}", index=True)
+                b = time.time()
+                with open(f"{self.workDir()}/time.log", "a+") as f:
+                    f.write(f"u_nk: {b-a}")
         if dHdl is not None:
+            a = time.time()
             _assert_imported(_alchemlyb)
             if isinstance(self._protocol, _Protocol.FreeEnergy):
                 energy = _extract_dHdl(
@@ -2921,6 +2931,9 @@ class Gromacs(_process.Process):
                         message="The DataFrame has column names of mixed type.",
                     )
                     energy.to_parquet(path=f"{self.workDir()}/{dHdl}", index=True)
+                b = time.time()
+                with open(f"{self.workDir()}/time.log", "a+") as f:
+                    f.write(f"dHdl: {b-a}")
 
 
 def _is_minimisation(config):
