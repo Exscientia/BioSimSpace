@@ -858,8 +858,10 @@ class Gromacs(_process.Process):
             _warnings.warn("The process exited with an error!")
 
         if block is True and not self.isError():
+            print("Using the getFinalFrame.")
             return self._getFinalFrame()
         else:
+            print(f"Using the trjconv (block: {block}; isError: {self.isError()}).")
             # Minimisation trajectories have a single frame, i.e. the final state.
             if isinstance(self._protocol, _Protocol.Minimisation):
                 time = 0 * _Units.Time.nanosecond
