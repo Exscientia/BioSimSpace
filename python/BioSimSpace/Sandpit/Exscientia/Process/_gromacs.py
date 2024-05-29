@@ -2402,11 +2402,13 @@ class Gromacs(_process.Process):
         U-B, Proper-Dih.. Note that this order is absolute and will not be
         changed by the input to `gmx energy`.
         """
+        # Get rid of all the nasty message from argo
+        text = text.split("End your selection with an empty line or a zero.")[1]
         sections = text.split("---")
         # Remove the empty sections
-        sections = [section for section in sections if section]
+        sections = [section for section in sections if section.strip()]
         # Concatenate the lines
-        section = sections[1].replace("\n", "")
+        section = sections[0].replace("\n", "")
         terms = section.split()
         # Remove the possible '-' from the separation line
         terms = [term for term in terms if term != "-"]
