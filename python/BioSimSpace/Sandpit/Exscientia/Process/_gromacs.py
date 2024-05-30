@@ -845,7 +845,7 @@ class Gromacs(_process.Process):
         system : :class:`System <BioSimSpace._SireWrappers.System>`
             The latest molecular system.
         """
-
+        print(f"(block: {block})")
         # Wait for the process to finish.
         if block is True:
             self.wait()
@@ -861,6 +861,7 @@ class Gromacs(_process.Process):
             print("Using the getFinalFrame.")
             return self._getFinalFrame()
         else:
+            return ValueError('go through the trjconv')
             print(f"Using the trjconv (block: {block}; isError: {self.isError()}).")
             # Minimisation trajectories have a single frame, i.e. the final state.
             if isinstance(self._protocol, _Protocol.Minimisation):
