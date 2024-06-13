@@ -227,7 +227,6 @@ class TestRestraint:
         run_process(system, protocol, restraint=restraint, work_dir=str(tmp_path))
         with open(tmp_path / "test.top", "r") as f:
             text = f.read()
-            assert "intermolecular_interactions" in text
             assert text.count("intermolecular_interactions") == 1
 
     def test_position_restraint_protocol(self, setup, tmp_path_factory):
@@ -247,7 +246,6 @@ class TestRestraint:
         run_process(system, protocol, restraint=restraint, work_dir=str(tmp_path))
         with open(tmp_path / "test.top", "r") as f:
             text = f.read()
-            assert "intermolecular_interactions" in text
             assert text.count("intermolecular_interactions") == 1
 
     def test_restraint_lambda(self, setup, tmp_path_factory):
