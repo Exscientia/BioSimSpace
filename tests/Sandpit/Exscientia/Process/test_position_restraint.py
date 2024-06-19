@@ -163,6 +163,8 @@ def test_gromacs(protocol, system, ref_system, tmp_path):
 
 
 def test_amber(protocol, system, ref_system, tmp_path):
+    if not isinstance(protocol, BSS.Protocol._FreeEnergyMixin):
+        pytest.skip("AMBER position restraint only works for free energy protocol")
     proc = BSS.Process.Amber(
         system, protocol, reference_system=ref_system, work_dir=str(tmp_path)
     )
