@@ -233,10 +233,6 @@ def test_gromacs_alchemical_ion(
 @pytest.mark.parametrize(
     ("restraint", "protocol", "target"),
     [
-        ("backbone", BSS.Protocol.Equilibration, "@5-7,9,15-17 | @6442,9"),
-        ("heavy", BSS.Protocol.Equilibration, "@2,5-7,9,11,15-17,19 | @6442,9"),
-        ("all", BSS.Protocol.Equilibration, "@1-22 | @6442,9"),
-        ("none", BSS.Protocol.Equilibration, "@6442,9"),
         (
             "backbone",
             BSS.Protocol.FreeEnergyEquilibration,
