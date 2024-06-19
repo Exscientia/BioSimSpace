@@ -250,7 +250,14 @@ class ConfigFactory:
             if self.system.getAlchemicalIon():
                 alchem_ion_idx = self.system.getAlchemicalIonIdx()
                 protein_com_idx = _get_protein_com_idx(self.system)
-                alchemical_ion_mask = f"@{alchem_ion_idx} | @{protein_com_idx}"
+                if isinstance(self.protocol, _Protocol._FreeEnergyMixin):
+                    # Change the `restraint` from None to the alchemical ion and protein
+                    # index as they needed to be converted to squashed index.
+                    alchemical_ion_mask = None
+                    restraint = [alchem_ion_idx, protein_com_idx]
+                else:
+                    # Convert to 1-based index
+                    alchemical_ion_mask = f"@{alchem_ion_idx+1} | @{protein_com_idx+1}"
             else:
                 alchemical_ion_mask = None
 
