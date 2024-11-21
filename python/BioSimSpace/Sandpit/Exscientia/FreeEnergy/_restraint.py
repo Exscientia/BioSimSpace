@@ -553,9 +553,9 @@ class Restraint:
         # Center is 90 degree
         # force constant is set that the force constant at 10 degree is same as
         # the force constant at 10 degree for a harmonic potential with equil=135 and fc=80
-        output.append(write_angle(("r2", "r1", "l1"), 90 * _degree, 10 * _kcal_per_mol / _radian**2, func_type=10, perturbed=False))
+        output.append(write_angle(("r2", "r1", "l1"), 90 * _degree, 1 * _kcal_per_mol / _radian**2, func_type=10, perturbed=False))
         # Bent angle: r2-r1-l1
-        output.append(write_angle(("r1", "l1", "l2"), 90 * _degree, 10 * _kcal_per_mol / _radian**2, func_type=10, perturbed=False))
+        output.append(write_angle(("r1", "l1", "l2"), 90 * _degree, 1 * _kcal_per_mol / _radian**2, func_type=10, perturbed=False))
 
         if restraint_lambda:
             output.append("[ dihedral_restraints ]")
