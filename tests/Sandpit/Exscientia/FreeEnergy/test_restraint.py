@@ -207,7 +207,7 @@ class TestGromacsOutputBoresch:
         assert ak == "1496"
         assert type == "10"
         assert thA == "90.000"
-        assert kA == "41.84"
+        assert kA == "4.184"
         assert thB == "90.000"
         assert kB == "41.84"
         ai, aj, ak, type, thA, kA, thB, kB = Topology[9].split()
@@ -216,7 +216,7 @@ class TestGromacsOutputBoresch:
         assert ak == "1497"
         assert type == "10"
         assert thA == "90.000"
-        assert kA == "41.84"
+        assert kA == "4.184"
         assert thB == "90.000"
         assert kB == "41.84"
 

@@ -551,8 +551,17 @@ class Restraint:
         output.append(write_angle(("r1", "l1", "l2"), "thetaB0", "kthetaB"))
         # Bent angle: r2-r1-l1
         # Center is 90 degree
-        # force constant is set that the force constant at 10 degree is same as
-        # the force constant at 10 degree for a harmonic potential with equil=135 and fc=80
+        # force constant is set by evaluating the free energy of adding a harmonic angle potential with fc at kcal/mol/rad2 at 135 degree
+        #| fc (kcal/mol/rad2) | FE (kcal/mol) |
+        #|--------------------|---------------|
+        #| control            | 1.05          |
+        #| 0                  | 1.05          |
+        #| 0.1                | 0.99          |
+        #| 1                  | 1.17          |
+        #| 5                  | CC            |
+        #| 10                 | 3.46          |
+        #| 100                | 14.92         |
+        # Thus 1 kcal/mol/rad2 is choosen
         output.append(write_angle(("r2", "r1", "l1"), 90 * _degree, 1 * _kcal_per_mol / _radian**2, func_type=10, perturbed=False))
         # Bent angle: r2-r1-l1
         output.append(write_angle(("r1", "l1", "l2"), 90 * _degree, 1 * _kcal_per_mol / _radian**2, func_type=10, perturbed=False))
