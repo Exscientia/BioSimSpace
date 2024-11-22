@@ -207,18 +207,18 @@ class TestGromacsOutputBoresch:
         assert ak == "1496"
         assert type == "10"
         assert thA == "90.000"
-        assert kA == "4.184"
+        assert kA == "4.18"
         assert thB == "90.000"
-        assert kB == "41.84"
+        assert kB == "4.18"
         ai, aj, ak, type, thA, kA, thB, kB = Topology[9].split()
         assert ai == "1"
         assert aj == "1496"
         assert ak == "1497"
         assert type == "10"
         assert thA == "90.000"
-        assert kA == "4.184"
+        assert kA == "4.18"
         assert thB == "90.000"
-        assert kB == "41.84"
+        assert kB == "4.18"
 
     def test_dihedral(self, Topology):
         ai, aj, ak, al, type, phiA, kA, phiB, kB = Topology[12].split()
