@@ -541,11 +541,8 @@ class ConfigFactory:
 
         # Temperature control.
         if not isinstance(self.protocol, _Protocol.Minimisation):
-            if isinstance(self.protocol, _Protocol._FreeEnergyMixin):
-                protocol_dict["integrator"] = "sd"  # langevin dynamics.
-            else:
-                protocol_dict["integrator"] = "md"  # leap-frog dynamics.
-                protocol_dict["tcoupl"] = "v-rescale"
+            protocol_dict["integrator"] = "md"  # leap-frog dynamics.
+            protocol_dict["tcoupl"] = "v-rescale"
             protocol_dict["tc-grps"] = (
                 "system"  # A single temperature group for the entire system.
             )
