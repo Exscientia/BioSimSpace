@@ -492,7 +492,7 @@ class ConfigFactory:
         if self._has_box and self._has_water:
             protocol_dict["ns-type"] = "grid"  # Use a grid to search for neighbours.
             protocol_dict["nstlist"] = (
-                "20"  # Rebuild neighbour list every 20 steps. Recommended in the manual for parallel simulations and/or non-bonded force calculation on the GPU.
+                "40"  # Rebuild neighbour list every 20 steps. Recommended in the manual for parallel simulations and/or non-bonded force calculation on the GPU.
             )
             protocol_dict["rlist"] = "0.8"  # Set short-range cutoff.
             protocol_dict["rvdw"] = "0.8"  # Set van der Waals cutoff.
